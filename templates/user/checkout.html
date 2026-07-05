@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout | SmartCart</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body {
+            background: #f4f6f9;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* ===========================
+           NAVBAR
+        =========================== */
+        .navbar {
+            background: #0d6efd;
+            padding: 18px 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 30px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            margin-left: 25px;
+            font-size: 17px;
+            transition: .3s;
+        }
+
+        .nav-links a:hover {
+            color: #ffd43b;
+        }
+
+        .menu-toggle {
+            display: none;
+            color: white;
+            font-size: 32px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        /* ===========================
+           LAYOUT SPLIT STRUCTURE
+        =========================== */
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 40px auto;
+            flex: 1;
+        }
+
+        .page-header {
+            font-size: 28px;
+            color: #222;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .checkout-grid {
+            display: grid;
+            grid-template-columns: 7fr 5fr;
+            gap: 30px;
+            align-items: start;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,.05);
+            padding: 30px;
+            border: 1px solid #e9ecef;
+        }
+
+        h3 {
+            font-size: 18px;
+            color: #222;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #f4f6f9;
+            padding-bottom: 10px;
+        }
+
+        /* ===========================
+           RESPONSIVE DATA MATRIX TABLE
+        =========================== */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            min-width: 500px;
+        }
+
+        th, td {
+            padding: 14px;
+            text-align: left;
+            font-size: 15px;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            color: #495057;
+            font-weight: bold;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        td {
+            border-bottom: 1px solid #eee;
+            color: #555;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+
+        /* ===========================
+           PRICING SUMMARY MODAL
+        =========================== */
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px dashed #dee2e6;
+            font-size: 15px;
+            color: #555;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 2px solid #eee;
+        }
+
+        .total-label {
+            font-size: 18px;
+            font-weight: bold;
+            color: #222;
+        }
+
+        .total-value {
+            font-size: 26px;
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        /* Action Buttons */
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 15px 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+            background: #28a745;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            text-align: center;
+            transition: .3s;
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.15);
+            margin-top: 20px;
+        }
+
+        .btn:hover {
+            background: #218838;
+        }
+
+        /* ===========================
+           MOBILE RESPONSIVE STRATEGY
+        =========================== */
+        @media(max-width: 992px) {
+            .checkout-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+
+        @media(max-width: 768px) {
+            .navbar {
+                padding: 15px 20px;
+            }
+
+            .logo {
+                font-size: 24px;
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                width: 100%;
+                position: absolute;
+                top: 68px;
+                left: 0;
+                background: #0d6efd;
+                box-shadow: 0 5px 10px rgba(0,0,0,.15);
+            }
+
+            .nav-links.show {
+                display: flex;
+            }
+
+            .nav-links a {
+                margin: 0;
+                padding: 16px;
+                text-align: center;
+                width: 100%;
+                border-top: 1px solid rgba(255,255,255,.15);
+            }
+
+            .container {
+                width: 92%;
+                margin: 20px auto;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .total-value {
+                font-size: 22px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Standard Ecosystem Navigation Navbar -->
+    <div class="navbar">
+        <div class="logo">🛒 SmartCart</div>
+        <div class="menu-toggle" onclick="toggleMenu()">☰</div>
+        <div class="nav-links" id="navLinks">
+            <a href="/user-dashboard">Dashboard</a>
+            <a href="/user/products">Products</a>
+            <a href="/user/cart">Cart</a>
+            <a href="/user/my-orders">Orders</a>
+            <a href="/user-logout">Logout</a>
+        </div>
+    </div>
+
+    <!-- Main Content Presentation Layout Frame -->
+    <div class="container">
+        <h2 class="page-header">🛒 Checkout</h2>
+
+        <div class="checkout-grid">
+            
+            <!-- Left Panel Side: Detailed Items Table Matrix -->
+            <div class="card">
+                <h3>Order Review</h3>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Item Name</th>
+                                <th class="text-center" style="width: 100px;">Price</th>
+                                <th class="text-center" style="width: 80px;">Qty</th>
+                                <th class="text-right" style="width: 120px;">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if checkout_items %}
+                                {% for pid, item in checkout_items.items() %}
+                                <tr>
+                                    <td><strong>{{ item.name }}</strong></td>
+                                    <td class="text-center" style="color: #666;">₹{{ item.price }}</td>
+                                    <td class="text-center">{{ item.quantity }}</td>
+                                    <td class="text-right" style="font-weight: bold; color: #222;">
+                                        ₹{{ (item.price * item.quantity) }}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center" style="color: #666; padding: 20px;">
+                                        Your checkout queue is empty.
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Right Panel Side: Sticky Pricing Invoice Breakdowns Widget -->
+            <div class="card">
+                <h3>Payment Summary</h3>
+                
+                <div class="summary-row">
+                    <span>Items Total</span>
+                    <strong>₹{{ total if total else '0.00' }}</strong>
+                </div>
+                <div class="summary-row">
+                    <span>Shipping Charges</span>
+                    <strong style="color: #28a745;">FREE</strong>
+                </div>
+
+                <div class="total-row">
+                    <span class="total-label">Total Amount Payable</span>
+                    <span class="total-value">₹{{ total if total else '0.00' }}</span>
+                </div>
+
+                <!-- Contextual Checkout Redirect Call-To-Action Link Button -->
+                <a href="/place_order" class="btn">
+                    Place Order &amp; Pay
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Interface Interactive Behaviors -->
+    <script>
+        // Toggle mobile hamburger layout navigation panel visibility states
+        function toggleMenu() {
+            document.getElementById("navLinks").classList.toggle("show");
+        }
+    </script>
+</body>
+</html>

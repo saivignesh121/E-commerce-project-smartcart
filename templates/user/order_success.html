@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmed | SmartCart</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body {
+            background: #f4f6f9;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* ===========================
+           NAVBAR
+        =========================== */
+        .navbar {
+            background: #0d6efd;
+            padding: 18px 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 30px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            margin-left: 25px;
+            font-size: 17px;
+            transition: .3s;
+        }
+
+        .nav-links a:hover {
+            color: #ffd43b;
+        }
+
+        .menu-toggle {
+            display: none;
+            color: white;
+            font-size: 32px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        /* ===========================
+           SUCCESS CONTAINER
+        =========================== */
+        .container {
+            width: 90%;
+            max-width: 750px;
+            margin: 40px auto;
+            flex: 1;
+        }
+
+        .success-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,.08);
+            padding: 40px;
+            text-align: center;
+        }
+
+        .success-card h2 {
+            color: #28a745;
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .success-card .sub-message {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+
+        /* ===========================
+           ORDER DETAILS INFO BOX
+        =========================== */
+        .order-details {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 25px;
+            text-align: left;
+            margin-bottom: 30px;
+        }
+
+        .order-details p {
+            font-size: 15px;
+            color: #444;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px dashed #dee2e6;
+            padding-bottom: 10px;
+        }
+
+        .order-details p:last-child {
+            margin-bottom: 0;
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .order-details strong {
+            color: #222;
+        }
+
+        .detail-value {
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            color: #222;
+            word-break: break-all;
+            padding-left: 15px;
+            text-align: right;
+        }
+
+        /* ===========================
+           ITEMS RESPONSIVE TABLE
+        =========================== */
+        .items-list {
+            text-align: left;
+            margin-bottom: 35px;
+        }
+
+        .items-list h3 {
+            font-size: 18px;
+            color: #222;
+            margin-bottom: 15px;
+            border-left: 4px solid #0d6efd;
+            padding-left: 10px;
+        }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            min-width: 500px; /* Guarantees layout formatting inside scroll wrapper */
+        }
+
+        th, td {
+            padding: 14px;
+            text-align: left;
+            font-size: 15px;
+        }
+
+        th {
+            background-color: #f1f3f5;
+            color: #495057;
+            font-weight: bold;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        td {
+            border-bottom: 1px solid #eee;
+            color: #555;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* ===========================
+           ACTION CONTROLS / BUTTONS
+        =========================== */
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .btn {
+            flex: 1;
+            min-width: 180px;
+            padding: 12px 20px;
+            font-size: 15px;
+            font-weight: bold;
+            border-radius: 8px;
+            text-decoration: none;
+            text-align: center;
+            transition: .3s;
+        }
+
+        .btn-primary {
+            background-color: #0d6efd;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background-color: #084298;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: #fff;
+        }
+
+        .btn-secondary:hover {
+            background-color: #565e64;
+        }
+
+        .btn-success {
+            background-color: #28a745;
+            color: #fff;
+        }
+
+        .btn-success:hover {
+            background-color: #218838;
+        }
+
+        /* ===========================
+           MOBILE RESPONSIVE STRATEGY
+        =========================== */
+        @media(max-width: 768px) {
+            .navbar {
+                padding: 15px 20px;
+            }
+
+            .logo {
+                font-size: 24px;
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                width: 100%;
+                position: absolute;
+                top: 68px;
+                left: 0;
+                background: #0d6efd;
+                box-shadow: 0 5px 10px rgba(0,0,0,.15);
+            }
+
+            .nav-links.show {
+                display: flex;
+            }
+
+            .nav-links a {
+                margin: 0;
+                padding: 16px;
+                text-align: center;
+                width: 100%;
+                border-top: 1px solid rgba(255,255,255,.15);
+            }
+
+            .container {
+                width: 92%;
+                margin: 20px auto;
+            }
+
+            .success-card {
+                padding: 30px 20px;
+            }
+
+            .order-details p {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 4px;
+            }
+
+            .detail-value {
+                text-align: left;
+                padding-left: 0;
+            }
+
+            .btn-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                flex: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Unified SmartCart Dashboard Navigation Navbar -->
+    <div class="navbar">
+        <div class="logo">🛒 SmartCart</div>
+        <div class="menu-toggle" onclick="toggleMenu()">☰</div>
+        <div class="nav-links" id="navLinks">
+            <a href="/user-dashboard">Dashboard</a>
+            <a href="/user/products">Products</a>
+            <a href="/user/cart">Cart</a>
+            <a href="/user/my-orders">Orders</a>
+            <a href="/user-logout">Logout</a>
+        </div>
+    </div>
+
+    <!-- Main Dynamic Content Canvas Presenter -->
+    <div class="container">
+        <div class="success-card">
+            <h2>🎉 Your Order is Confirmed!</h2>
+            <p class="sub-message">Thank you for shopping with <strong>SmartCart</strong>.</p>
+
+            <!-- Metadata Info Panel Grid -->
+            <div class="order-details">
+                <p>
+                    <strong>Order ID:</strong> 
+                    <span class="detail-value">{{ order.order_id if order else 'N/A' }}</span>
+                </p>
+                <p>
+                    <strong>Payment ID:</strong> 
+                    <span class="detail-value">{{ order.razorpay_payment_id if order else 'N/A' }}</span>
+                </p>
+                <p>
+                    <strong>Amount Paid:</strong> 
+                    <span class="detail-value" style="color: #28a745;">₹{{ order.amount if order else '0.00' }}</span>
+                </p>
+                <p>
+                    <strong>Order Date:</strong> 
+                    <span class="detail-value">{{ order.created_at if order else 'N/A' }}</span>
+                </p>
+            </div>
+
+            <!-- Items Loop Compilation Section -->
+            <div class="items-list">
+                <h3>Order Summary</h3>
+                
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th style="width: 80px; text-align: center;">Qty</th>
+                                <th style="width: 120px; text-align: right;">Price</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if items %}
+                                {% for it in items %}
+                                <tr>
+                                    <td><strong>{{ it.product_name }}</strong></td>
+                                    <td style="text-align: center;">{{ it.quantity }}</td>
+                                    <td style="text-align: right; font-weight: bold; color: #222;">₹{{ it.price }}</td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="3" style="text-align: center; color: #666; padding: 20px;">
+                                        No item details available.
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Contextual Navigation CTA Blocks -->
+            <div class="btn-group">
+                <a href="/user/products" class="btn btn-secondary">Browse Products</a>
+                <a href="/user/my-orders" class="btn btn-primary">View My Orders</a>
+                <a href="/user/download-invoice/{{ order.order_id if order else '#' }}" class="btn btn-success">
+                    📥 Download Invoice (PDF)
+                </a>
+            </div>
+            
+        </div>
+    </div>
+
+    <!-- Interactive Layer Behaviours -->
+    <script>
+        // Toggle mobile menu drawer visibility values
+        function toggleMenu() {
+            document.getElementById("navLinks").classList.toggle("show");
+        }
+    </script>
+</body>
+</html>

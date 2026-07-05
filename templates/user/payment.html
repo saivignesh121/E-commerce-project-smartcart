@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Payment | SmartCart</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body {
+            background: #f4f6f9;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* ===========================
+           NAVBAR
+        =========================== */
+        .navbar {
+            background: #0d6efd;
+            padding: 18px 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 30px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            margin-left: 25px;
+            font-size: 17px;
+            transition: .3s;
+        }
+
+        .nav-links a:hover {
+            color: #ffd43b;
+        }
+
+        .menu-toggle {
+            display: none;
+            color: white;
+            font-size: 32px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        /* ===========================
+           PAYMENT CONTAINER
+        =========================== */
+        .container {
+            width: 90%;
+            max-width: 550px;
+            margin: 60px auto;
+            flex: 1;
+        }
+
+        .payment-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,.08);
+            padding: 40px;
+            text-align: center;
+        }
+
+        .payment-icon {
+            font-size: 55px;
+            margin-bottom: 20px;
+            color: #0d6efd;
+        }
+
+        h2 {
+            color: #222;
+            font-size: 26px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 15px;
+            margin-bottom: 30px;
+        }
+
+        .amount-box {
+            background: #f8f9fa;
+            border: 1px dashed #ced4da;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 35px;
+        }
+
+        .amount-label {
+            font-size: 14px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .amount-value {
+            font-size: 32px;
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        /* ===========================
+           CONTROLS / BUTTONS
+        =========================== */
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 15px 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            text-align: center;
+            transition: .3s;
+        }
+
+        .btn-primary {
+            background: #0d6efd;
+        }
+
+        .btn-primary:hover {
+            background: #084298;
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        /* ===========================
+           MOBILE RESPONSIVE
+        =========================== */
+        @media(max-width: 768px){
+            .navbar {
+                padding: 15px 20px;
+            }
+
+            .logo {
+                font-size: 24px;
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                width: 100%;
+                position: absolute;
+                top: 68px;
+                left: 0;
+                background: #0d6efd;
+                box-shadow: 0 5px 10px rgba(0,0,0,.15);
+            }
+
+            .nav-links.show {
+                display: flex;
+            }
+
+            .nav-links a {
+                margin: 0;
+                padding: 16px;
+                text-align: center;
+                width: 100%;
+                border-top: 1px solid rgba(255,255,255,.15);
+            }
+
+            .container {
+                width: 92%;
+                margin: 30px auto;
+            }
+
+            .payment-card {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <div class="logo">🛒 SmartCart</div>
+        <div class="menu-toggle" onclick="toggleMenu()">☰</div>
+        <div class="nav-links" id="navLinks">
+            <a href="/user-dashboard">Dashboard</a>
+            <a href="/user/products">Products</a>
+            <a href="/user/cart">Cart</a>
+            <a href="/user/my-orders">Orders</a>
+            <a href="/user-logout">Logout</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="payment-card">
+            <div class="payment-icon">🔒</div>
+            <h2>Complete Your Purchase</h2>
+            <p class="subtitle">Please do not refresh or close this window during processing</p>
+
+            <div class="amount-box">
+                <div class="amount-label">Total Payable Amount</div>
+                <div class="amount-value">₹{{ total if total else '0.00' }}</div>
+            </div>
+
+            {% if not order_id %}
+                <a href="/user/pay" class="btn btn-success">
+                    Proceed to Secure Payment
+                </a>
+            {% else %}
+                <button id="rzp-button" class="btn btn-primary">
+                    Open Payment Overlay
+                </button>
+            {% endif %}
+        </div>
+    </div>
+
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+    {% if order_id %}
+    <script>
+        var options = {
+            key: "{{ key_id }}",
+            amount: "{{ (total * 100) | int }}", 
+            currency: "INR",
+            name: "SmartCart",
+            description: "Order Payment",
+            order_id: "{{ order_id }}",
+            handler: function (response) {
+                var form = document.createElement("form");
+                form.method = "POST";
+                form.action = "/verify-payment";
+
+                var fields = {
+                    razorpay_payment_id: response.razorpay_payment_id,
+                    razorpay_order_id: response.razorpay_order_id,
+                    razorpay_signature: response.razorpay_signature,
+                };
+
+                for (var name in fields) {
+                    var input = document.createElement("input");
+                    input.type = "hidden";
+                    input.name = name;
+                    input.value = fields[name];
+                    form.appendChild(input);
+                }
+
+                document.body.appendChild(form);
+                form.submit();
+            },
+            theme: {
+                color: "#0d6efd"
+            }
+        };
+
+        var rzp = new Razorpay(options);
+
+        // Auto-launch modal instantly when the page loads with an active order ID
+        window.onload = function() {
+            rzp.open();
+        };
+
+        // Fallback manual dynamic prompt trigger link click hooks
+        document.getElementById("rzp-button").onclick = function (e) {
+            rzp.open();
+            e.preventDefault();
+        };
+    </script>
+    {% endif %}
+
+    <script>
+        // Toggle mobile navigation overlay wrapper layout panel
+        function toggleMenu() {
+            document.getElementById("navLinks").classList.toggle("show");
+        }
+    </script>
+</body>
+</html>

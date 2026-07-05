@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Products | SmartCart</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen antialiased flex flex-col">
+
+    <nav class="bg-indigo-600 shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <h2 class="text-xl font-black text-white tracking-wider uppercase">SmartCart</h2>
+                </div>
+                
+                <div class="hidden md:flex items-center space-x-6 text-sm font-semibold text-white/90">
+                    <a href="{{ url_for('user_dashboard') }}" class="hover:text-white transition">Dashboard</a>
+                    <a href="{{ url_for('user_products') }}" class="text-white bg-indigo-700/50 px-3 py-2 rounded-lg transition">Products</a>
+                    <a href="/user/cart" class="hover:text-white transition flex items-center gap-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 0a2 2 0 110 4 2 2 0 010-4z"></path>
+                        </svg>
+                        Cart
+                    </a>
+                    <a href="/user/my-orders" class="hover:text-white transition">My Orders</a>
+                    <a href="/user-logout" class="bg-indigo-500 hover:bg-red-500 px-3 py-1.5 rounded-lg text-white transition text-xs font-bold uppercase tracking-wider">Logout</a>
+                </div>
+
+                <div class="md:hidden flex items-center">
+                    <button id="mobile-menu-btn" class="text-white hover:text-indigo-200 focus:outline-none cursor-pointer">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path id="menu-icon" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="mobile-menu" class="hidden md:hidden bg-indigo-700 border-t border-indigo-800 px-4 pt-2 pb-4 space-y-2 text-sm font-medium text-white/90">
+            <a href="{{ url_for('user_dashboard') }}" class="block py-2 px-3 rounded-lg hover:bg-indigo-800 transition">Dashboard</a>
+            <a href="{{ url_for('user_products') }}" class="block py-2 px-3 rounded-lg bg-indigo-900 text-white transition">Products</a>
+            <a href="/user/cart" class="block py-2 px-3 rounded-lg hover:bg-indigo-800 transition">Cart</a>
+            <a href="/user/my-orders" class="block py-2 px-3 rounded-lg hover:bg-indigo-800 transition">My Orders</a>
+            <div class="pt-2 border-t border-indigo-800">
+                <a href="/user-logout" class="block py-2 px-3 text-center bg-red-500 rounded-lg text-white font-bold transition">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 flex-1 w-full">
+        
+        <div class="mb-6 flex flex-wrap justify-between items-center gap-4">
+            <h2 class="text-2xl font-bold text-slate-800 tracking-tight sm:text-3xl">All Products</h2>
+            {% if search_query or selected_category %}
+                <a href="/user/products" class="text-xs font-bold uppercase tracking-wider text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-2 rounded-xl transition">
+                    Clear All Filters ×
+                </a>
+            {% endif %}
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="mb-6 space-y-2">
+                    {% for category, message in messages %}
+                        <div class="p-4 rounded-xl text-sm font-medium bg-emerald-50 text-emerald-700 border border-emerald-100">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 mb-8">
+            <form method="GET" action="/user/products" class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+                
+                <div class="md:col-span-7 flex gap-2">
+                    <input 
+                        type="text" 
+                        name="search" 
+                        placeholder="Search for products by name or description..." 
+                        value="{{ search_query if search_query else '' }}"
+                        class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"
+                    >
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm px-6 rounded-xl transition cursor-pointer shrink-0">
+                        Search
+                    </button>
+                </div>
+
+                <div class="md:col-span-5 flex items-center gap-3">
+                    <label class="text-xs font-bold uppercase tracking-wider text-slate-400 shrink-0 hidden sm:inline-block">Category:</label>
+                    <select 
+                        name="category" 
+                        onchange="this.form.submit()" 
+                        class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2364748B%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2F%3E')] bg-[length:12px_12px] bg-[right_16px_center] bg-no-repeat cursor-pointer"
+                    >
+                        <option value="">All Categories</option>
+                        {% for cat in categories %}
+                            <option value="{{ cat }}" {% if selected_category == cat %} selected {% endif %}>
+                                {{ cat }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+            </form>
+        </div>
+
+        {% if products and products|length > 0 %}
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {% for product in products %}
+                    <div class="group bg-white rounded-2xl shadow-sm hover:shadow-xl border border-slate-100 p-5 transition-all duration-300 flex flex-col justify-between hover:-translate-y-1">
+                        
+                        <div class="bg-slate-50 rounded-xl p-4 flex items-center justify-center h-48 mb-4 overflow-hidden relative border border-slate-50">
+                            <img src="/static/uploads/product_images/{{ product.image }}" 
+                                 alt="{{ product.name }}"
+                                 class="max-w-full max-h-full object-contain mix-blend-multiply transform group-hover:scale-105 transition duration-300">
+                        </div>
+
+                        <div class="flex-1 flex flex-col justify-between">
+                            <div>
+                                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
+                                    {{ product.category }}
+                                </span>
+                                <h3 class="font-bold text-slate-800 text-base line-clamp-2 tracking-tight group-hover:text-indigo-600 transition h-12 overflow-hidden">
+                                    {{ product.name }}
+                                </h3>
+                            </div>
+                            
+                            <div class="mt-4 pt-3 border-t border-slate-50 flex items-center justify-between">
+                                <div class="flex flex-col">
+                                    <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Price</span>
+                                    <span class="font-extrabold text-slate-900 text-lg">₹{{ product.price }}</span>
+                                </div>
+                                
+                                <a href="/user/product/{{ product.product_id }}" 
+                                   class="inline-flex items-center justify-center bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white font-semibold text-xs py-2.5 px-4 rounded-xl shadow-xs transition duration-200 cursor-pointer"
+                                >
+                                    View Details
+                                </a>
+                            </div>
+                        </div>
+
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-16 bg-white rounded-2xl border border-slate-100 shadow-sm max-w-xl mx-auto my-4 px-4">
+                <div class="text-slate-300 text-6xl mb-4">🔍</div>
+                <h3 class="text-lg font-bold text-slate-800">No Matching Products Found</h3>
+                <p class="text-slate-500 text-sm mt-2 max-w-sm mx-auto">
+                    We couldn't find anything matching your search settings. Try updating your text parameters or clearing your category selections.
+                </p>
+                <a href="/user/products" class="inline-block mt-6 text-xs font-bold uppercase tracking-wider text-white bg-indigo-600 hover:bg-indigo-700 px-5 py-3 rounded-xl transition shadow-xs">
+                    Reset Catalog Grid View
+                </a>
+            </div>
+        {% endif %}
+    </main>
+
+    <script>
+        const btn = document.getElementById('mobile-menu-btn');
+        const menu = document.getElementById('mobile-menu');
+        const icon = document.getElementById('menu-icon');
+
+        btn.addEventListener('click', () => {
+            menu.classList.toggle('hidden');
+            if(menu.classList.contains('hidden')) {
+                icon.setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
+            } else {
+                icon.setAttribute('d', 'M6 18L18 6M6 6l12 12');
+            }
+        });
+    </script>
+</body>
+</html>

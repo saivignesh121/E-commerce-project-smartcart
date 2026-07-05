@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ product.name if product else 'Product Details' }} | SmartCart</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body {
+            background: #f4f6f9;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* ===========================
+           TOAST NOTIFICATIONS
+        =========================== */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 350px;
+            width: calc(100% - 40px);
+        }
+
+        .toast {
+            background: #28a745;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-size: 16px;
+            box-shadow: 0 5px 15px rgba(0,0,0,.2);
+            animation: slideIn .4s ease forward;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .toast.error {
+            background: #dc3545;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* ===========================
+           NAVBAR
+        =========================== */
+        .navbar {
+            background: #0d6efd;
+            padding: 18px 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 30px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            margin-left: 25px;
+            font-size: 17px;
+            transition: .3s;
+        }
+
+        .nav-links a:hover {
+            color: #ffd43b;
+        }
+
+        .menu-toggle {
+            display: none;
+            color: white;
+            font-size: 32px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        /* ===========================
+           PRODUCT CARD DISPLAY
+        =========================== */
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 40px auto;
+            flex: 1;
+        }
+
+        .product {
+            display: flex;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,.08);
+            overflow: hidden;
+            align-items: center;
+        }
+
+        .image {
+            flex: 1;
+            background: #fafafa;
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-right: 1px solid #eee;
+        }
+
+        .image img {
+            width: 100%;
+            max-width: 400px;
+            height: auto;
+            object-fit: contain;
+        }
+
+        .details {
+            flex: 1;
+            padding: 50px;
+        }
+
+        .details h1 {
+            margin-bottom: 15px;
+            font-size: 36px;
+            color: #222;
+        }
+
+        .category {
+            display: inline-block;
+            background: #e6f0ff;
+            color: #0d6efd;
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .price {
+            font-size: 36px;
+            color: #28a745;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .description {
+            font-size: 16px;
+            color: #555;
+            line-height: 1.7;
+            margin-bottom: 35px;
+        }
+
+        .description strong {
+            color: #222;
+            font-size: 18px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            flex: 1;
+            display: inline-block;
+            padding: 15px 25px;
+            border-radius: 8px;
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            text-align: center;
+            transition: .3s;
+            font-size: 16px;
+        }
+
+        .cart {
+            background: #28a745;
+        }
+
+        .cart:hover {
+            background: #218838;
+        }
+
+        .back {
+            background: #6c757d;
+        }
+
+        .back:hover {
+            background: #5a6268;
+        }
+
+        /* ===========================
+           MOBILE RESPONSIVE STRATEGY
+        =========================== */
+        @media(max-width: 768px){
+            .navbar {
+                padding: 15px 20px;
+            }
+
+            .logo {
+                font-size: 24px;
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                width: 100%;
+                position: absolute;
+                top: 68px;
+                left: 0;
+                background: #0d6efd;
+                box-shadow: 0 5px 10px rgba(0,0,0,.15);
+            }
+
+            .nav-links.show {
+                display: flex;
+            }
+
+            .nav-links a {
+                margin: 0;
+                padding: 16px;
+                text-align: center;
+                width: 100%;
+                border-top: 1px solid rgba(255,255,255,.15);
+            }
+
+            .container {
+                width: 92%;
+                margin: 20px auto;
+            }
+
+            .product {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .image {
+                padding: 30px;
+                border-right: none;
+                border-bottom: 1px solid #eee;
+            }
+
+            .image img {
+                max-width: 260px;
+            }
+
+            .details {
+                padding: 30px 20px;
+            }
+
+            .details h1 {
+                font-size: 28px;
+            }
+
+            .price {
+                font-size: 30px;
+            }
+
+            .btn-group {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .toast-container {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+                width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="toast-container" id="toastContainer">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="toast {{ category }}">
+                        {{ '✅' if category != 'error' else '❌' }} {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <div class="navbar">
+        <div class="logo">🛒 SmartCart</div>
+        <div class="menu-toggle" onclick="toggleMenu()">☰</div>
+        <div class="nav-links" id="navLinks">
+            <a href="/user-dashboard">Dashboard</a>
+            <a href="/user/products">Products</a>
+            <a href="/user/cart">Cart</a>
+            <a href="/user/my-orders">Orders</a>
+            <a href="/user-logout">Logout</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="product">
+            
+            <div class="image">
+                {% if product and product.image %}
+                    <img src="/static/uploads/product_images/{{ product.image }}" alt="{{ product.name }}">
+                {% else %}
+                    <img src="https://via.placeholder.com/400x400?text=No+Image+Available" alt="No image available">
+                {% endif %}
+            </div>
+
+            <div class="details">
+                <div class="category">{{ product.category if product else 'Category' }}</div>
+                <h1>{{ product.name if product else 'Product Title' }}</h1>
+                <div class="price">₹{{ product.price if product else '0.00' }}</div>
+
+                <div class="description">
+                    <strong>Description</strong>
+                    <br><br>
+                    {{ product.description if product else 'No description available for this item.' }}
+                </div>
+
+                <div class="btn-group">
+                    <a href="/user/add-to-cart/{{ product.product_id if product else '#' }}" class="btn cart">
+                        🛒 Add to Cart
+                    </a>
+                    <a href="/user/products" class="btn back">
+                        ⬅ Back to Products
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Toggle mobile navigation container overlay panel
+        function toggleMenu() {
+            document.getElementById("navLinks").classList.toggle("show");
+        }
+
+        // Close menu panel clean-up logic if user taps off-screen targets
+        window.onclick = function(event) {
+            if (!event.target.matches('.menu-toggle') && !event.target.closest('#navLinks')) {
+                const navLinks = document.getElementById("navLinks");
+                if (navLinks.classList.contains('show')) {
+                    navLinks.classList.remove('show');
+                }
+            }
+        }
+
+        // Automatic dismissal controller logic handling active flash cards
+        document.addEventListener("DOMContentLoaded", function() {
+            const toasts = document.querySelectorAll(".toast");
+            toasts.forEach(function(toast) {
+                setTimeout(function() {
+                    toast.style.opacity = "0";
+                    toast.style.transform = "translateY(-10px)";
+                    setTimeout(function() {
+                        toast.remove();
+                    }, 500);
+                }, 3500); // Retains alert visibilities up to 3.5 seconds
+            });
+        });
+    </script>
+</body>
+</html>

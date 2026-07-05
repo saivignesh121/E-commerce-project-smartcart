@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders | SmartCart</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body {
+            background: #f4f6f9;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* ===========================
+           NAVBAR
+        =========================== */
+        .navbar {
+            background: #0d6efd;
+            padding: 18px 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 30px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            margin-left: 25px;
+            font-size: 17px;
+            transition: .3s;
+        }
+
+        .nav-links a:hover {
+            color: #ffd43b;
+        }
+
+        .menu-toggle {
+            display: none;
+            color: white;
+            font-size: 32px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        /* ===========================
+           ORDERS CONTAINER
+        =========================== */
+        .container {
+            width: 90%;
+            max-width: 900px;
+            margin: 40px auto;
+            flex: 1;
+        }
+
+        .page-header {
+            font-size: 28px;
+            color: #222;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Empty State */
+        .empty-orders {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,.05);
+        }
+
+        .empty-orders p {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        /* Order Cards Layout */
+        .order-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,.05);
+            border: 1px solid #e9ecef;
+            transition: transform .2s, box-shadow .2s;
+        }
+
+        .order-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(0,0,0,.08);
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #f1f3f5;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .order-header h3 {
+            font-size: 18px;
+            color: #222;
+        }
+
+        /* Status Pills */
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            font-size: 13px;
+            font-weight: bold;
+            border-radius: 20px;
+            text-transform: capitalize;
+        }
+
+        .status-success, .status-paid {
+            background-color: #d1e7dd;
+            color: #0f5132;
+        }
+
+        .status-pending {
+            background-color: #fff3cd;
+            color: #664d03;
+        }
+
+        .status-failed {
+            background-color: #f8d7da;
+            color: #842029;
+        }
+
+        /* Info Fields Rows */
+        .order-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-group label {
+            display: block;
+            font-size: 13px;
+            color: #777;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .info-group span {
+            font-size: 16px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .amount-value {
+            color: #28a745 !important;
+            font-weight: bold !important;
+        }
+
+        /* Button Grid Layout controls */
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            text-decoration: none;
+            border-radius: 6px;
+            text-align: center;
+            transition: .2s;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background-color: #0d6efd;
+            color: white;
+            border: 1px solid #0d6efd;
+        }
+
+        .btn-primary:hover {
+            background-color: #084298;
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: #495057;
+            border: 1px solid #ced4da;
+        }
+
+        .btn-secondary:hover {
+            background-color: #f8f9fa;
+            color: #212529;
+        }
+
+        /* ===========================
+           MOBILE RESPONSIVE
+        =========================== */
+        @media(max-width: 768px) {
+            .navbar {
+                padding: 15px 20px;
+            }
+
+            .logo {
+                font-size: 24px;
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                width: 100%;
+                position: absolute;
+                top: 68px;
+                left: 0;
+                background: #0d6efd;
+                box-shadow: 0 5px 10px rgba(0,0,0,.15);
+            }
+
+            .nav-links.show {
+                display: flex;
+            }
+
+            .nav-links a {
+                margin: 0;
+                padding: 16px;
+                text-align: center;
+                width: 100%;
+                border-top: 1px solid rgba(255,255,255,.15);
+            }
+
+            .container {
+                width: 92%;
+                margin: 20px auto;
+            }
+
+            .order-card {
+                padding: 18px;
+            }
+
+            .order-info {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .btn-group {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Shared Core Header -->
+    <div class="navbar">
+        <div class="logo">🛒 SmartCart</div>
+        <div class="menu-toggle" onclick="toggleMenu()">☰</div>
+        <div class="nav-links" id="navLinks">
+            <a href="/user-dashboard">Dashboard</a>
+            <a href="/user/products">Products</a>
+            <a href="/user/cart">Cart</a>
+            <a href="/user/my-orders">Orders</a>
+            <a href="/user-logout">Logout</a>
+        </div>
+    </div>
+
+    <!-- Main Dynamic Content Context -->
+    <div class="container">
+        <h2 class="page-header">📦 My Orders</h2>
+
+        {% if not orders or orders|length == 0 %}
+            <!-- Empty Order State -->
+            <div class="empty-orders">
+                <p>You have not placed any orders yet.</p>
+                <a href="/user/products" class="btn btn-primary" style="display: inline-block; width: auto;">
+                    Start Shopping
+                </a>
+            </div>
+        {% else %}
+            <!-- Orders Present Grid Loop -->
+            {% for order in orders %}
+                <div class="order-card">
+                    
+                    <div class="order-header">
+                        <h3>Order ID: #{{ order.order_id }}</h3>
+                        <!-- Smart Status Badging Fallbacks -->
+                        <span class="status-badge {% if order.payment_status|lower == 'paid' or order.payment_status|lower == 'success' %}status-success{% elif order.payment_status|lower == 'pending' %}status-pending{% else %}status-failed{% endif %}">
+                            {{ order.payment_status if order.payment_status else 'Pending' }}
+                        </span>
+                    </div>
+
+                    <div class="order-info">
+                        <div class="info-group">
+                            <label>Total Amount</label>
+                            <span class="amount-value">₹{{ order.amount }}</span>
+                        </div>
+                        <div class="info-group">
+                            <label>Date &amp; Time</label>
+                            <span>{{ order.created_at }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Action Route Triggers -->
+                    <div class="btn-group">
+                        <a href="/user/order-success/{{ order.order_id }}" class="btn btn-primary">
+                            View Order Details
+                        </a>
+                        <a href="/user/download-invoice/{{ order.order_id }}" class="btn btn-secondary">
+                            📥 Download Invoice
+                        </a>
+                    </div>
+
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <script>
+        // Toggle mobile menu visibility state layers
+        function toggleMenu() {
+            document.getElementById("navLinks").classList.toggle("show");
+        }
+    </script>
+</body>
+</html>
