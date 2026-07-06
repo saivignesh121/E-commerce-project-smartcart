@@ -1,305 +1,80 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invoice | SmartCart</title>
+{% extends 'base.html' %}
+{% block title %}Invoice | SmartCart{% endblock %}
 
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: Arial, Helvetica, sans-serif;
-        }
-
-        body {
-            background: #f4f6f9;
-            padding: 40px 20px;
-            color: #333;
-        }
-
-        /* ===========================
-           INVOICE STRUCTURAL CONTAINER
-        =========================== */
-        .invoice-box {
-            max-width: 800px;
-            width: 100%;
-            margin: 0 auto;
-            background: white;
-            border-radius: 12px;
-            padding: 40px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            border: 1px solid #e9ecef;
-        }
-
-        /* ===========================
-           HEADER SECTION
-        =========================== */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid #0d6efd;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
-        }
-
-        .brand h2 {
-            color: #0d6efd;
-            font-size: 28px;
-            font-weight: bold;
-        }
-
-        .brand p {
-            color: #777;
-            font-size: 14px;
-            margin-top: 4px;
-        }
-
-        .meta-details {
-            text-align: right;
-            font-size: 14px;
-            color: #555;
-            line-height: 1.5;
-        }
-
-        .meta-details strong {
-            color: #111;
-        }
-
-        /* ===========================
-           CUSTOMER INFO BLOCKS
-        =========================== */
-        .section-title {
-            font-size: 16px;
-            color: #495057;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 12px;
-            margin-top: 25px;
-            border-left: 4px solid #0d6efd;
-            padding-left: 8px;
-        }
-
-        .info-card {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 15px 20px;
-            font-size: 15px;
-            color: #444;
-            border: 1px solid #e9ecef;
-        }
-
-        /* ===========================
-           RESPONSIVE DATA MATRIX
-        =========================== */
-        .table-responsive {
-            width: 100%;
-            overflow-x: auto;
-            margin-top: 15px;
-            border-radius: 8px;
-            border: 1px solid #dee2e6;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            min-width: 450px; /* Guarantees layout spacing on tiny viewports */
-        }
-
-        th, td {
-            padding: 12px 15px;
-            text-align: left;
-            font-size: 15px;
-        }
-
-        th {
-            background-color: #f1f3f5;
-            color: #495057;
-            font-weight: bold;
-            border-bottom: 2px solid #dee2e6;
-        }
-
-        td {
-            border-bottom: 1px solid #dee2e6;
-            color: #555;
-        }
-
-        tr:last-child td {
-            border-bottom: none;
-        }
-
-        .text-center { text-align: center; }
-        .text-right { text-align: right; }
-
-        /* Grand Total Box */
-        .total-wrapper {
-            margin-top: 30px;
-            display: flex;
-            justify-content: flex-end;
-        }
-
-        .total-box {
-            background: #e6f0ff;
-            border: 1px solid #b6d4fe;
-            border-radius: 8px;
-            padding: 15px 25px;
-            display: flex;
-            gap: 20px;
-            align-items: center;
-        }
-
-        .total-label {
-            font-size: 16px;
-            font-weight: bold;
-            color: #0c4128;
-            text-transform: uppercase;
-        }
-
-        .total-amount {
-            font-size: 24px;
-            color: #28a745;
-            font-weight: bold;
-        }
-
-        /* Back to Dashboard Utility Link (Hidden when printing PDF) */
-        .action-utilities {
-            max-width: 800px;
-            margin: 20px auto 0 auto;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .util-btn {
-            color: #0d6efd;
-            text-decoration: none;
-            font-size: 15px;
-            font-weight: bold;
-        }
-        .util-btn:hover { text-decoration: underline; }
-
-        /* ===========================
-           MOBILE RESPONSIVE STRATEGY
-        =========================== */
-        @media(max-width: 600px) {
-            body {
-                padding: 15px 10px;
-            }
-
-            .invoice-box {
-                padding: 20px 15px;
-            }
-
-            .header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 15px;
-            }
-
-            .meta-details {
-                text-align: left;
-            }
-
-            .total-wrapper {
-                justify-content: stretch;
-            }
-
-            .total-box {
-                width: 100%;
-                justify-content: space-between;
-            }
-        }
-
-        /* ===========================
-           PRINT / PDF PARSING RULE CONFIG
-        =========================== */
-        @media print {
-            body {
-                background: white;
-                padding: 0;
-            }
-            .invoice-box {
-                border: none;
-                box-shadow: none;
-                padding: 0;
-            }
-            .action-utilities {
-                display: none; /* Strips back-links on actual invoice document sheets */
-            }
-        }
-    </style>
-</head>
-<body>
-
-    <!-- Main Content Presentation Layout -->
-    <div class="invoice-box">
+{% block content %}
+<div class="max-w-4xl mx-auto py-10 px-4 sm:px-6 lg:px-8 w-full flex-grow print:py-0 print:px-0">
+    
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 sm:p-10 print:border-none print:shadow-none print:p-0">
         
-        <!-- Header Matrix -->
-        <div class="header">
-            <div class="brand">
-                <h2>SmartCart</h2>
-                <p>Official Purchase Invoice</p>
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b-2 border-indigo-600 pb-5 mb-8 gap-4">
+            <div>
+                <h2 class="text-3xl font-black text-indigo-600 tracking-wider uppercase">SmartCart</h2>
+                <p class="text-xs font-bold uppercase tracking-wider text-slate-400 mt-1">Official Purchase Invoice</p>
             </div>
-            <div class="meta-details">
-                <p><strong>Order ID:</strong> {{ order.order_id if order else 'N/A' }}</p>
-                <p><strong>Date:</strong> {{ order.created_at if order else 'N/A' }}</p>
+            <div class="text-left sm:text-right text-sm text-slate-600 space-y-0.5">
+                <p><span class="font-bold text-slate-800">Order ID:</span> #{{ order.order_id if order else 'N/A' }}</p>
+                <p><span class="font-bold text-slate-800">Date:</span> {{ order.created_at if order else 'N/A' }}</p>
             </div>
         </div>
 
-        <!-- Identity Metrics Block -->
-        <h3 class="section-title">Customer Details</h3>
-        <div class="info-card">
-            <p><strong>User ID Reference:</strong> #{{ order.user_id if order else 'N/A' }}</p>
+        <div class="space-y-3 mb-8">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 border-l-4 border-indigo-600 pl-2">Customer Details</h3>
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm text-slate-700">
+                <p><span class="font-semibold text-slate-500">User ID Reference:</span> #{{ order.user_id if order else 'N/A' }}</p>
+            </div>
         </div>
 
-        <!-- Items Table Grid List Stack -->
-        <h3 class="section-title">Line Items Summary</h3>
-        <div class="table-responsive">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Product Name</th>
-                        <th class="text-center" style="width: 80px;">Qty</th>
-                        <th class="text-right" style="width: 140px;">Price</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% if items %}
-                        {% for it in items %}
-                        <tr>
-                            <td><strong>{{ it.product_name }}</strong></td>
-                            <td class="text-center">{{ it.quantity }}</td>
-                            <td class="text-right" style="font-weight: bold; color: #222;">₹{{ it.price }}</td>
+        <div class="space-y-3">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 border-l-4 border-indigo-600 pl-2">Line Items Summary</h3>
+            <div class="w-full overflow-x-auto rounded-xl border border-slate-200/80">
+                <table class="w-full border-collapse text-left min-w-[400px]">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-200">
+                            <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Product Name</th>
+                            <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-center w-24">Qty</th>
+                            <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right w-36">Price</th>
                         </tr>
-                        {% endfor %}
-                    {% else %}
-                        <tr>
-                            <td colspan="3" class="text-center" style="color: #666; padding: 20px;">
-                                No itemized descriptions present.
-                            </td>
-                        </tr>
-                    {% endif %}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        {% if items %}
+                            {% for it in items %}
+                            <tr class="hover:bg-slate-50/40 transition-colors">
+                                <td class="p-4">
+                                    <span class="font-bold text-slate-800 text-sm">{{ it.product_name }}</span>
+                                </td>
+                                <td class="p-4 text-sm text-slate-600 text-center font-medium">{{ it.quantity }}</td>
+                                <td class="p-4 text-sm font-bold text-slate-900 text-right">₹{{ it.price }}</td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="3" class="p-8 text-center text-sm font-medium text-slate-400">
+                                    No itemized descriptions present.
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
         </div>
 
-        <!-- Invoice Calculation Footer Panel -->
-        <div class="total-wrapper">
-            <div class="total-box">
-                <span class="total-label">Grand Total</span>
-                <span class="total-amount">₹{{ order.amount if order else '0.00' }}</span>
+        <div class="flex justify-end mt-8">
+            <div class="bg-indigo-50/60 border border-indigo-100 rounded-xl px-6 py-4 flex items-center gap-6 min-w-[260px] justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-indigo-700">Grand Total</span>
+                <span class="text-2xl font-black text-emerald-600">₹{{ order.amount if order else '0.00' }}</span>
             </div>
         </div>
 
     </div>
 
-    <!-- Frontend Interactive Navigation Bar Hook -->
-    <div class="action-utilities">
-        <a href="/user/my-orders" class="util-btn">⬅ Back to My Orders</a>
-        <a href="javascript:window.print()" class="util-btn" style="color: #28a745;">🖨️ Print / Save as PDF</a>
+    <div class="flex justify-between items-center mt-6 px-1 print:hidden">
+        <a href="/user/my-orders" class="text-sm font-semibold text-indigo-600 hover:text-indigo-800 transition">
+            ⬅ Back to My Orders
+        </a>
+        <a href="javascript:window.print()" class="text-sm font-bold text-emerald-600 hover:text-emerald-700 transition flex items-center gap-1.5">
+            🖨️ Print / Save as PDF
+        </a>
     </div>
 
-</body>
-</html>
+</div>
+{% endblock %}

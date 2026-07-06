@@ -1,354 +1,100 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartCart | User Dashboard</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: Arial, Helvetica, sans-serif;
-        }
+{% extends 'base.html' %}
+{% block title %}SmartCart | User Dashboard{% endblock %}
 
-        body {
-            background: #f4f6f9;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
-        /* =========================
-           NAVBAR
-        ========================= */
-        .navbar {
-            background: #0d6efd;
-            color: #fff;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 18px 60px;
-            position: relative;
-            z-index: 1000;
-        }
-
-        .logo {
-            font-size: 30px;
-            font-weight: bold;
-        }
-
-        .nav-links {
-            display: flex;
-            align-items: center;
-        }
-
-        .nav-links a {
-            color: white;
-            text-decoration: none;
-            margin-left: 25px;
-            font-size: 17px;
-            transition: .3s;
-        }
-
-        .nav-links a:hover {
-            color: #ffd43b;
-        }
-
-        .menu-toggle {
-            display: none;
-            font-size: 32px;
-            cursor: pointer;
-            user-select: none;
-        }
-
-        /* =========================
-           CONTAINER & CONTENT
-        ========================= */
-        .container {
-            width: 90%;
-            max-width: 1200px;
-            margin: 35px auto;
-            flex: 1; /* Pushes footer to bottom if content is short */
-        }
-
-        /* =========================
-           FLASH MESSAGES
-        ========================= */
-        .flash {
-            background: #d1e7dd;
-            color: #0f5132;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 25px;
-            border: 1px solid #badbcc;
-        }
-
-        /* =========================
-           WELCOME SECTION
-        ========================= */
-        .welcome {
-            background: white;
-            padding: 35px;
-            border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0,0,0,.08);
-            margin-bottom: 35px;
-        }
-
-        .welcome h1 {
-            color: #222;
-            font-size: 32px;
-        }
-
-        .welcome p {
-            margin-top: 12px;
-            color: #666;
-            font-size: 18px;
-            line-height: 1.6;
-        }
-
-        /* =========================
-           DASHBOARD CARDS
-        ========================= */
-        .cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 25px;
-        }
-
-        .card {
-            background: white;
-            border-radius: 12px;
-            text-align: center;
-            padding: 35px 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,.08);
-            transition: transform .3s identity, box-shadow .3s;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0,0,0,.12);
-        }
-
-        .icon {
-            font-size: 50px;
-            margin-bottom: 15px;
-        }
-
-        .card h2 {
-            margin-bottom: 10px;
-            color: #333;
-            font-size: 22px;
-        }
-
-        .card p {
-            color: #666;
-            margin-bottom: 20px;
-            line-height: 1.5;
-            font-size: 15px;
-            flex-grow: 1; /* Keeps buttons aligned even if text lengths vary */
-        }
-
-        .btn {
-            display: inline-block;
-            background: #0d6efd;
-            color: white;
-            text-decoration: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: .3s;
-            width: 100%;
-        }
-
-        .btn:hover {
-            background: #084298;
-        }
-
-        /* =========================
-           FOOTER
-        ========================= */
-        .footer {
-            text-align: center;
-            color: #666;
-            padding: 25px 20px;
-            background: #eef1f5;
-            font-size: 14px;
-            margin-top: auto;
-        }
-
-        /* =========================
-           MOBILE RESPONSIVE
-        ========================= */
-        @media(max-width: 768px) {
-            .navbar {
-                padding: 15px 20px;
-            }
-
-            .logo {
-                font-size: 24px;
-            }
-
-            .menu-toggle {
-                display: block;
-            }
-
-            .nav-links {
-                display: none;
-                flex-direction: column;
-                width: 100%;
-                position: absolute;
-                top: 68px;
-                left: 0;
-                background: #0d6efd;
-                box-shadow: 0 5px 10px rgba(0,0,0,.15);
-            }
-
-            .nav-links.show {
-                display: flex;
-            }
-
-            .nav-links a {
-                margin: 0;
-                padding: 16px;
-                text-align: center;
-                width: 100%;
-                border-top: 1px solid rgba(255,255,255,.15);
-            }
-
-            .container {
-                width: 92%;
-                margin: 20px auto;
-            }
-
-            .welcome {
-                padding: 25px;
-                margin-bottom: 25px;
-            }
-
-            .welcome h1 {
-                font-size: 26px;
-            }
-
-            .welcome p {
-                font-size: 15px;
-            }
-
-            .cards {
-                grid-template-columns: 1fr; /* Stack vertically on small screens */
-                gap: 20px;
-            }
-        }
-    </style>
-</head>
-<body>
-
-    <div class="navbar">
-        <div class="logo">🛒 SmartCart</div>
-        <div class="menu-toggle" onclick="toggleMenu()">☰</div>
-        <div class="nav-links" id="navLinks">
-            <a href="/user-dashboard">Dashboard</a>
-            <a href="/user/products">Products</a>
-            <a href="/user/cart">
-                Cart 
-                {% if cart_count and cart_count > 0 %}
-                ({{ cart_count }})
-                {% endif %}
-            </a>
-            <a href="/user/my-orders">My Orders</a>
-            <a href="/user-logout">Logout</a>
-        </div>
-    </div>
-
-    <div class="container">
-        
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
+{% block content %}
+<main class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8 w-full flex-grow">
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="mb-8 space-y-2">
                 {% for category, message in messages %}
-                    <div class="flash {{ category }}">
+                    <div class="p-4 rounded-xl text-sm font-medium border
+                        {% if category == 'danger' or category == 'error' %}
+                            bg-rose-50 text-rose-700 border-rose-100
+                        {% else %}
+                            bg-emerald-50 text-emerald-700 border-emerald-100
+                        {% endif %}">
                         {{ message }}
                     </div>
                 {% endfor %}
-            {% endif %}
-        {% endwith %}
+            </div>
+        {% endif %}
+    {% endwith %}
 
-        <div class="welcome">
-            <h1>Welcome, {{ user_name if user_name else 'User' }} 👋</h1>
-            <p>
-                Welcome back to <strong>SmartCart</strong>. Browse products, manage your cart,
-                track your orders, and enjoy secure online shopping.
+    <div class="bg-white rounded-2xl border border-slate-200/80 p-6 sm:p-8 shadow-sm mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Welcome, {{ user_name if user_name else 'User' }} 👋</h1>
+            <p class="text-slate-400 text-sm mt-1">
+                Welcome back to <span class="font-bold text-slate-700">SmartCart</span>. Browse products, manage your cart parameters, track historical transactions, and enjoy secure online shopping.
             </p>
         </div>
-
-        <div class="cards">
-            
-            <div class="card">
-                <div>
-                    <div class="icon">🛍️</div>
-                    <h2>Browse Products</h2>
-                    <p>Explore all available products and find your next buy.</p>
-                </div>
-                <a href="/user/products" class="btn">Browse</a>
-            </div>
-
-            <div class="card">
-                <div>
-                    <div class="icon">🛒</div>
-                    <h2>My Cart</h2>
-                    <p>
-                        {% if cart_count and cart_count > 0 %}
-                            You have {{ cart_count }} item(s) waiting in your cart.
-                        {% else %}
-                            Your cart is currently empty.
-                        {% endif %}
-                    </p>
-                </div>
-                <a href="/user/cart" class="btn">Open Cart</a>
-            </div>
-
-            <div class="card">
-                <div>
-                    <div class="icon">📦</div>
-                    <h2>My Orders</h2>
-                    <p>View all your previous purchases and order histories.</p>
-                </div>
-                <a href="/user/my-orders" class="btn">Orders</a>
-            </div>
-
-            <div class="card">
-                <div>
-                    <div class="icon">🚪</div>
-                    <h2>Logout</h2>
-                    <p>Sign out from your account safely.</p>
-                </div>
-                <a href="/user-logout" class="btn">Logout</a>
-            </div>
-
+        <div class="shrink-0">
+            <span class="inline-flex items-center text-xs font-semibold text-slate-400 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200/40">
+                🛒 Items in Cart: {{ cart_count if cart_count else '0' }}
+            </span>
         </div>
     </div>
 
-    <div class="footer">
-        &copy; 2026 SmartCart | Flask + MySQL E-Commerce Project
-    </div>
-
-    <script>
-        function toggleMenu() {
-            const navLinks = document.getElementById("navLinks");
-            navLinks.classList.toggle("show");
-        }
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         
-        // Optional: Close menu when clicking outside on mobile
-        window.onclick = function(event) {
-            if (!event.target.matches('.menu-toggle') && !event.target.matches('.nav-links') && !event.target.closest('.nav-links')) {
-                const navLinks = document.getElementById("navLinks");
-                if (navLinks.classList.contains('show')) {
-                    navLinks.classList.remove('show');
-                }
-            }
-        }
-    </script>
-</body>
-</html>
+        <div class="group bg-white rounded-2xl border border-slate-200/80 p-6 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between">
+            <div>
+                <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 font-bold text-2xl flex items-center justify-center mb-4 group-hover:bg-indigo-600 group-hover:text-white transition-colors duration-200">
+                    🛍️
+                </div>
+                <h3 class="text-lg font-bold text-slate-800 tracking-tight mb-2">Browse Store</h3>
+                <p class="text-slate-400 text-sm leading-relaxed mb-6">Explore our live marketplace product inventory catalogs and find your next buy.</p>
+            </div>
+            <a href="/user/products" class="w-full text-center text-sm font-bold bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white py-2.5 rounded-xl transition-all duration-150">
+                Browse Catalog
+            </a>
+        </div>
+
+        <div class="group bg-white rounded-2xl border border-slate-200/80 p-6 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between">
+            <div>
+                <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 font-bold text-2xl flex items-center justify-center mb-4 group-hover:bg-emerald-600 group-hover:text-white transition-colors duration-200">
+                    🛒
+                </div>
+                <h3 class="text-lg font-bold text-slate-800 tracking-tight mb-2">My Shopping Cart</h3>
+                <p class="text-slate-400 text-sm leading-relaxed mb-6">
+                    {% if cart_count and cart_count > 0 %}
+                        You have {{ cart_count }} item(s) waiting inside your active session cart.
+                    {% else %}
+                        Your shopping cart cache layer is currently empty.
+                    {% endif %}
+                </p>
+            </div>
+            <a href="/user/cart" class="w-full text-center text-sm font-bold bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white py-2.5 rounded-xl transition-all duration-150">
+                Open Cart
+            </a>
+        </div>
+
+        <div class="group bg-white rounded-2xl border border-slate-200/80 p-6 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between">
+            <div>
+                <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 font-bold text-2xl flex items-center justify-center mb-4 group-hover:bg-amber-600 group-hover:text-white transition-colors duration-200">
+                    📦
+                </div>
+                <h3 class="text-lg font-bold text-slate-800 tracking-tight mb-2">My Orders</h3>
+                <p class="text-slate-400 text-sm leading-relaxed mb-6">Track ongoing package fulfillment statuses and download purchase invoice records sheets.</p>
+            </div>
+            <a href="/user/my-orders" class="w-full text-center text-sm font-bold bg-amber-50 text-amber-700 hover:bg-amber-600 hover:text-white py-2.5 rounded-xl transition-all duration-150">
+                View History
+            </a>
+        </div>
+
+        <div class="group bg-white rounded-2xl border border-slate-200/80 p-6 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between">
+            <div>
+                <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 font-bold text-2xl flex items-center justify-center mb-4 group-hover:bg-rose-600 group-hover:text-white transition-colors duration-200">
+                    🚪
+                </div>
+                <h3 class="text-lg font-bold text-slate-800 tracking-tight mb-2">Secure Logout</h3>
+                <p class="text-slate-400 text-sm leading-relaxed mb-6">Clear site cache vectors, wipe session variables, and exit your user portal safely.</p>
+            </div>
+            <a href="/user-logout" class="w-full text-center text-sm font-bold bg-rose-50 text-rose-700 hover:bg-rose-600 hover:text-white py-2.5 rounded-xl transition-all duration-150 border border-rose-200/40">
+                Log Out
+            </a>
+        </div>
+
+    </div>
+</main>
+{% endblock %}

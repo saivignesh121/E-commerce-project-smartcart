@@ -1,506 +1,168 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Cart | SmartCart</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: Arial, Helvetica, sans-serif;
-        }
+{% extends 'base.html' %}
+{% block title %}Your Cart | SmartCart{% endblock %}
 
-        body {
-            background: #f4f6f9;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
+{% block content %}
+<div class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8 w-full flex-grow">
+    <h2 class="text-2xl font-bold text-slate-800 tracking-tight mb-6 flex items-center gap-2">
+        🛒 Your Shopping Cart
+    </h2>
 
-        /* ===========================
-           NAVBAR
-        =========================== */
-        .navbar {
-            background: #0d6efd;
-            padding: 18px 60px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: relative;
-            z-index: 1000;
-        }
-
-        .logo {
-            font-size: 30px;
-            font-weight: bold;
-            color: white;
-        }
-
-        .nav-links {
-            display: flex;
-            align-items: center;
-        }
-
-        .nav-links a {
-            color: white;
-            text-decoration: none;
-            margin-left: 25px;
-            font-size: 17px;
-            transition: .3s;
-        }
-
-        .nav-links a:hover {
-            color: #ffd43b;
-        }
-
-        .menu-toggle {
-            display: none;
-            color: white;
-            font-size: 32px;
-            cursor: pointer;
-            user-select: none;
-        }
-
-        /* ===========================
-           MAIN ARCHITECTURE
-        =========================== */
-        .container {
-            width: 90%;
-            max-width: 1200px;
-            margin: 40px auto;
-            flex: 1;
-        }
-
-        .page-header {
-            font-size: 28px;
-            color: #222;
-            margin-bottom: 25px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        /* Flash Error Display */
-        .flash-error {
-            background: #f8d7da;
-            color: #842029;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 25px;
-            border: 1px solid #f5c2c7;
-            font-size: 15px;
-        }
-
-        /* Empty Cart State */
-        .empty-cart {
-            background: white;
-            border-radius: 12px;
-            padding: 50px 20px;
-            text-align: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,.05);
-        }
-
-        .empty-cart h3 {
-            font-size: 22px;
-            color: #555;
-            margin-bottom: 15px;
-        }
-
-        /* ===========================
-           CART LAYOUT SPLIT
-        =========================== */
-        .cart-layout {
-            display: grid;
-            grid-template-columns: 8fr 4fr;
-            gap: 30px;
-            align-items: start;
-        }
-
-        .card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,.05);
-            padding: 30px;
-            border: 1px solid #e9ecef;
-        }
-
-        /* ===========================
-           DATA MATRIX TABLE
-        =========================== */
-        .table-responsive {
-            width: 100%;
-            overflow-x: auto;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            min-width: 700px;
-        }
-
-        th, td {
-            padding: 14px;
-            text-align: center;
-            vertical-align: middle;
-            font-size: 15px;
-        }
-
-        th {
-            background-color: #f8f9fa;
-            color: #495057;
-            font-weight: bold;
-            border-bottom: 2px solid #dee2e6;
-        }
-
-        td {
-            border-bottom: 1px solid #eee;
-            color: #555;
-        }
-
-        .product-cell {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            text-align: left;
-        }
-
-        .product-cell img {
-            border-radius: 6px;
-            object-fit: contain;
-            border: 1px solid #eee;
-        }
-
-        /* Custom inputs and layout buttons */
-        .checkbox-container input {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-        }
-
-        .qty-control {
-            display: inline-flex;
-            align-items: center;
-            gap: 12px;
-            background: #f1f3f5;
-            padding: 6px 12px;
-            border-radius: 20px;
-        }
-
-        .qty-btn {
-            text-decoration: none;
-            font-size: 14px;
-            color: #333;
-            transition: transform 0.1s;
-        }
-        .qty-btn:active { transform: scale(0.85); }
-
-        .remove-link {
-            color: #dc3545;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 14px;
-        }
-        .remove-link:hover { text-decoration: underline; }
-
-        /* ===========================
-           CHECKOUT INVOICE CARD
-        =========================== */
-        .total-box {
-            font-size: 16px;
-            color: #555;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px dashed #dee2e6;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .total-highlight {
-            font-size: 28px;
-            color: #28a745;
-            font-weight: bold;
-        }
-
-        .btn-group {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .btn {
-            display: block;
-            width: 100%;
-            padding: 15px 20px;
-            font-size: 16px;
-            font-weight: bold;
-            border: none;
-            border-radius: 8px;
-            text-decoration: none;
-            text-align: center;
-            cursor: pointer;
-            transition: .2s;
-        }
-
-        .btn-success {
-            background: #28a745;
-            color: white;
-            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.15);
-        }
-        .btn-success:hover { background: #218838; }
-
-        .btn-secondary {
-            background: #0d6efd;
-            color: white;
-        }
-        .btn-secondary:hover { background: #084298; }
-
-        /* ===========================
-           MOBILE RESPONSIVE STRATEGY
-        =========================== */
-        @media(max-width: 992px) {
-            .cart-layout {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-        }
-
-        @media(max-width: 768px) {
-            .navbar {
-                padding: 15px 20px;
-            }
-
-            .logo {
-                font-size: 24px;
-            }
-
-            .menu-toggle {
-                display: block;
-            }
-
-            .nav-links {
-                display: none;
-                flex-direction: column;
-                width: 100%;
-                position: absolute;
-                top: 68px;
-                left: 0;
-                background: #0d6efd;
-                box-shadow: 0 5px 10px rgba(0,0,0,.15);
-            }
-
-            .nav-links.show {
-                display: flex;
-            }
-
-            .nav-links a {
-                margin: 0;
-                padding: 16px;
-                text-align: center;
-                width: 100%;
-                border-top: 1px solid rgba(255,255,255,.15);
-            }
-
-            .container {
-                width: 92%;
-                margin: 20px auto;
-            }
-
-            .card {
-                padding: 20px;
-            }
-        }
-    </style>
-</head>
-<body>
-
-    <!-- Standard SmartCart Framework Header -->
-    <div class="navbar">
-        <div class="logo">🛒 SmartCart</div>
-        <div class="menu-toggle" onclick="toggleMenu()">☰</div>
-        <div class="nav-links" id="navLinks">
-            <a href="/user-dashboard">Dashboard</a>
-            <a href="/user/products">Products</a>
-            <a href="/user/cart">Cart</a>
-            <a href="/user/my-orders">Orders</a>
-            <a href="/user-logout">Logout</a>
-        </div>
-    </div>
-
-    <!-- Main Content presentation layer -->
-    <div class="container">
-        <h2 class="page-header">🛒 Your Shopping Cart</h2>
-
-        <!-- Flash Messages Block -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="mb-6 space-y-2">
                 {% for category, message in messages %}
-                    <div class="flash-error">
-                        ⚠️ {{ message }}
+                    <div class="p-4 rounded-xl text-sm font-medium bg-rose-50 text-rose-700 border border-rose-100 flex items-center gap-2">
+                        <span>⚠️</span>
+                        <div>{{ message }}</div>
                     </div>
                 {% endfor %}
-            {% endif %}
-        {% endwith %}
-
-        {% if not cart %}
-            <!-- Empty Cart Component Fallback -->
-            <div class="empty-cart">
-                <h3>Your Cart is Currently Empty</h3>
-                <p style="color:#777; margin-bottom: 25px;">Looks like you haven't added anything to your cart yet.</p>
-                <a href="/user/products" class="btn btn-secondary" style="display: inline-block; width: auto; padding: 12px 30px;">
-                    Start Shopping
-                </a>
             </div>
-        {% else %}
-            <!-- Interactive Checkout Multi-Select Form -->
-            <form action="/user/checkout" method="POST" id="cartForm">
-                <div class="cart-layout">
-                    
-                    <!-- Left Side Column Panel: Cart Item Rows Container -->
-                    <div class="card">
-                        <div class="table-responsive">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th style="width: 60px;" class="checkbox-container">
-                                            <input type="checkbox" id="selectAll" title="Select All Items">
-                                        </th>
-                                        <th style="text-align: left;">Product Details</th>
-                                        <th style="width: 100px;">Price</th>
-                                        <th style="width: 140px;">Quantity</th>
-                                        <th style="width: 120px;">Total</th>
-                                        <th style="width: 90px;">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for pid, item in cart.items() %}
-                                    <tr>
-                                        <td class="checkbox-container">
-                                            <input 
-                                                type="checkbox" 
-                                                name="selected_products" 
-                                                value="{{ pid }}" 
-                                                class="product-checkbox"
-                                                data-total="{{ item.price * item.quantity }}"
-                                                checked> <!-- Default to checked for standard e-commerce flow -->
-                                        </td>
-                                        <td>
-                                            <div class="product-cell">
-                                                <img src="/static/uploads/product_images/{{ item.image }}" width="60" height="60" alt="{{ item.name }}">
-                                                <strong>{{ item.name }}</strong>
-                                            </div>
-                                        </td>
-                                        <td style="font-weight: 500; color: #444;">₹{{ item.price }}</td>
-                                        <td>
-                                            <div class="qty-control">
-                                                <a class="qty-btn" href="/user/cart/decrease/{{ pid }}" title="Decrease Quantity">➖</a>
-                                                <strong>{{ item.quantity }}</strong>
-                                                <a class="qty-btn" href="/user/cart/increase/{{ pid }}" title="Increase Quantity">➕</a>
-                                            </div>
-                                        </td>
-                                        <td style="font-weight: bold; color: #222;">
-                                            ₹{{ (item.price * item.quantity) }}
-                                        </td>
-                                        <td>
-                                            <a class="remove-link" href="/user/cart/remove/{{ pid }}">Remove</a>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- Right Side Column Panel: Real-Time Price Summaries Widget Card -->
-                    <div class="card">
-                        <h3 style="font-size: 18px; margin-bottom: 20px; color:#222;">Order Summary</h3>
-                        
-                        <div class="total-box">
-                            <span>Selected Items Total:</span>
-                            <span class="total-highlight">₹<span id="selectedTotal">0.00</span></span>
-                        </div>
-
-                        <div class="btn-group">
-                            <button type="submit" class="btn btn-success" id="checkoutBtn">
-                                Proceed To Checkout
-                            </button>
-                            <a href="/user/products" class="btn btn-secondary">
-                                Continue Shopping
-                            </a>
-                        </div>
-                    </div>
-
-                </div>
-            </form>
         {% endif %}
-    </div>
+    {% endwith %}
 
-    <!-- Calculations & Component View Utilities -->
-    <script>
-        // Toggle mobile menu visibility overlay settings
-        function toggleMenu() {
-            document.getElementById("navLinks").classList.toggle("show");
-        }
+    {% if not cart %}
+        <div class="text-center py-16 bg-white rounded-2xl border border-slate-200/80 shadow-sm max-w-xl mx-auto px-4">
+            <div class="text-slate-300 text-6xl mb-4">🛒</div>
+            <h3 class="text-lg font-bold text-slate-800">Your Cart is Currently Empty</h3>
+            <p class="text-slate-500 text-sm mt-2 max-w-sm mx-auto">Looks like you haven't added anything to your cart yet.</p>
+            <a href="/user/products" class="inline-block mt-6 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm px-6 py-3 rounded-xl shadow-sm transition">
+                Start Shopping
+            </a>
+        </div>
+    {% else %}
+        <form action="/user/checkout" method="POST" id="cartForm">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                
+                <div class="lg:col-span-8 bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                    <div class="w-full overflow-x-auto">
+                        <table class="w-full border-collapse text-left min-w-[600px]">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-200">
+                                    <th class="p-4 w-16 text-center">
+                                        <input type="checkbox" id="selectAll" class="w-4 h-4 cursor-pointer accent-indigo-600 rounded">
+                                    </th>
+                                    <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Product Details</th>
+                                    <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-center w-28">Price</th>
+                                    <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-center w-36">Quantity</th>
+                                    <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-center w-32">Total</th>
+                                    <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-center w-24">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                {% for pid, item in cart.items() %}
+                                <tr class="hover:bg-slate-50/40 transition-colors">
+                                    <td class="p-4 text-center">
+                                        <input 
+                                            type="checkbox" 
+                                            name="selected_products" 
+                                            value="{{ pid }}" 
+                                            class="product-checkbox w-4 h-4 cursor-pointer accent-indigo-600 rounded"
+                                            data-total="{{ item.price * item.quantity }}"
+                                            checked
+                                        >
+                                    </td>
+                                    <td class="p-4">
+                                        <div class="flex items-center gap-4">
+                                            <div class="w-12 h-12 bg-slate-50 rounded-lg border border-slate-100 p-1 flex items-center justify-center overflow-hidden shrink-0">
+                                                <img src="/static/uploads/product_images/{{ item.image }}" alt="" class="max-w-full max-h-full object-contain">
+                                            </div>
+                                            <span class="font-bold text-slate-800 text-sm line-clamp-1">{{ item.name }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="p-4 text-sm font-semibold text-slate-600 text-center">₹{{ item.price }}</td>
+                                    <td class="p-4 text-center">
+                                        <div class="inline-flex items-center gap-3 bg-slate-100 px-3 py-1.5 rounded-full text-xs">
+                                            <a class="text-slate-500 hover:text-slate-800 active:scale-75 transition" href="/user/cart/decrease/{{ pid }}">➖</a>
+                                            <span class="font-bold text-slate-800 text-sm min-w-[12px] text-center">{{ item.quantity }}</span>
+                                            <a class="text-slate-500 hover:text-slate-800 active:scale-75 transition" href="/user/cart/increase/{{ pid }}">➕</a>
+                                        </div>
+                                    </td>
+                                    <td class="p-4 text-sm font-bold text-slate-900 text-center">₹{{ (item.price * item.quantity) }}</td>
+                                    <td class="p-4 text-center">
+                                        <a class="text-xs font-bold text-rose-600 hover:text-rose-800 hover:underline transition" href="/user/cart/remove/{{ pid }}">Remove</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
-        // Live calculation logic tracking explicit item check mutations
-        function updateTotal() {
-            let total = 0;
-            let checkedCount = 0;
-            const checkboxes = document.querySelectorAll(".product-checkbox");
-            const checkoutBtn = document.getElementById("checkoutBtn");
+                <div class="lg:col-span-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-5">
+                    <h3 class="text-lg font-bold text-slate-800 tracking-tight pb-3 border-b border-slate-100">Order Summary</h3>
+                    
+                    <div class="flex justify-between items-center text-sm font-medium text-slate-500">
+                        <span>Selected Items Total:</span>
+                        <span class="text-2xl font-black text-emerald-600">₹<span id="selectedTotal">0.00</span></span>
+                    </div>
 
-            checkboxes.forEach(function(box) {
-                if (box.checked) {
-                    total += parseFloat(box.dataset.total);
-                    checkedCount++;
-                }
-            });
+                    <div class="flex flex-col gap-3 pt-2">
+                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm py-3 px-4 rounded-xl shadow-sm transition uppercase tracking-wider cursor-pointer" id="checkoutBtn">
+                            Proceed To Checkout
+                        </button>
+                        <a href="/user/products" class="w-full text-center bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm py-3 px-4 rounded-xl transition uppercase tracking-wider">
+                            Continue Shopping
+                        </a>
+                    </div>
+                </div>
 
-            // Update DOM Total string representation values
-            document.getElementById("selectedTotal").innerHTML = total.toLocaleString('en-IN', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            });
+            </div>
+        </form>
+    {% endif %}
+</div>
+{% endblock %}
 
-            // Prevent empty check forms from posting backend redirections
-            if (checkoutBtn) {
-                checkoutBtn.disabled = checkedCount === 0;
-                checkoutBtn.style.opacity = checkedCount === 0 ? "0.5" : "1";
-                checkoutBtn.style.cursor = checkedCount === 0 ? "not-allowed" : "pointer";
+{% block scripts %}
+<script>
+    // Live calculation tracking system logic values
+    function updateTotal() {
+        let total = 0;
+        let checkedCount = 0;
+        const checkboxes = document.querySelectorAll(".product-checkbox");
+        const checkoutBtn = document.getElementById("checkoutBtn");
+
+        checkboxes.forEach(function(box) {
+            if (box.checked) {
+                total += parseFloat(box.dataset.total);
+                checkedCount++;
             }
-
-            // Sync master Select All check state
-            const selectAllBox = document.getElementById("selectAll");
-            if (selectAllBox) {
-                selectAllBox.checked = (checkedCount === checkboxes.length) && checkboxes.length > 0;
-            }
-        }
-
-        // Event hooks initialization
-        document.addEventListener("DOMContentLoaded", function() {
-            const checkboxes = document.querySelectorAll(".product-checkbox");
-            const selectAllBox = document.getElementById("selectAll");
-
-            checkboxes.forEach(function(box) {
-                box.addEventListener("change", updateTotal);
-            });
-
-            // Master checkbox logic handling collective updates
-            if (selectAllBox) {
-                selectAllBox.addEventListener("change", function() {
-                    checkboxes.forEach(box => box.checked = selectAllBox.checked);
-                    updateTotal();
-                });
-            }
-
-            // Fire structural total computation values on initial run
-            updateTotal();
         });
-    </script>
-</body>
-</html>
+
+        // Format dynamic value string representations inside DOM anchors
+        document.getElementById("selectedTotal").innerHTML = total.toLocaleString('en-IN', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+
+        // Prevent invalid empty payload POST requests 
+        if (checkoutBtn) {
+            checkoutBtn.disabled = checkedCount === 0;
+            checkoutBtn.style.opacity = checkedCount === 0 ? "0.4" : "1";
+            checkoutBtn.style.cursor = checkedCount === 0 ? "not-allowed" : "pointer";
+        }
+
+        const selectAllBox = document.getElementById("selectAll");
+        if (selectAllBox) {
+            selectAllBox.checked = (checkedCount === checkboxes.length) && checkboxes.length > 0;
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const checkboxes = document.querySelectorAll(".product-checkbox");
+        const selectAllBox = document.getElementById("selectAll");
+
+        checkboxes.forEach(function(box) {
+            box.addEventListener("change", updateTotal);
+        });
+
+        if (selectAllBox) {
+            selectAllBox.addEventListener("change", function() {
+                checkboxes.forEach(box => box.checked = selectAllBox.checked);
+                updateTotal();
+            });
+        }
+
+        updateTotal();
+    });
+</script>
+{% endblock %}

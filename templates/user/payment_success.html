@@ -1,270 +1,32 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment Successful | SmartCart</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: Arial, Helvetica, sans-serif;
-        }
+{% extends 'base.html' %}
+{% block title %}Payment Successful | SmartCart{% endblock %}
 
-        body {
-            background: #f4f6f9;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
+{% block content %}
+<div class="max-w-xl mx-auto py-12 px-4 sm:px-6 lg:px-8 w-full flex-grow flex items-center justify-center">
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 sm:p-10 text-center w-full">
+        
+        <div class="text-6xl mb-4 animate-bounce duration-500 select-none">🎉</div>
+        
+        <h2 class="text-3xl font-black text-emerald-600 tracking-tight mb-3">Payment Successful!</h2>
+        <p class="text-slate-500 text-sm leading-relaxed mb-8 max-w-sm mx-auto">
+            Thank you for your purchase. Your order has been placed successfully and is currently entering our processing channels.
+        </p>
 
-        /* ===========================
-           NAVBAR
-        =========================== */
-        .navbar {
-            background: #0d6efd;
-            padding: 18px 60px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: relative;
-            z-index: 1000;
-        }
-
-        .logo {
-            font-size: 30px;
-            font-weight: bold;
-            color: white;
-        }
-
-        .nav-links {
-            display: flex;
-            align-items: center;
-        }
-
-        .nav-links a {
-            color: white;
-            text-decoration: none;
-            margin-left: 25px;
-            font-size: 17px;
-            transition: .3s;
-        }
-
-        .nav-links a:hover {
-            color: #ffd43b;
-        }
-
-        .menu-toggle {
-            display: none;
-            color: white;
-            font-size: 32px;
-            cursor: pointer;
-            user-select: none;
-        }
-
-        /* ===========================
-           SUCCESS CONTAINER
-        =========================== */
-        .container {
-            width: 90%;
-            max-width: 550px;
-            margin: 60px auto;
-            flex: 1;
-        }
-
-        .success-card {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 5px 20px rgba(0,0,0,.08);
-            padding: 40px;
-            text-align: center;
-        }
-
-        .success-icon {
-            font-size: 65px;
-            color: #28a745;
-            margin-bottom: 20px;
-            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        @keyframes popIn {
-            0% { transform: scale(0); }
-            100% { transform: scale(1); }
-        }
-
-        h2 {
-            color: #28a745;
-            font-size: 28px;
-            margin-bottom: 12px;
-        }
-
-        .message {
-            color: #555;
-            font-size: 16px;
-            margin-bottom: 30px;
-            line-height: 1.5;
-        }
-
-        /* ===========================
-           DETAILS BOX
-        =========================== */
-        .receipt-box {
-            background: #f8f9fa;
-            border: 1px solid #e9ecef;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 35px;
-            text-align: left;
-        }
-
-        .receipt-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px dashed #dee2e6;
-            font-size: 15px;
-        }
-
-        .receipt-row:last-child {
-            border-bottom: none;
-        }
-
-        .label {
-            color: #666;
-            font-weight: 500;
-        }
-
-        .value {
-            color: #222;
-            font-family: 'Courier New', Courier, monospace;
-            font-weight: bold;
-        }
-
-        /* ===========================
-           BUTTON CONTROLS
-        =========================== */
-        .btn {
-            display: block;
-            width: 100%;
-            padding: 15px 25px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            color: white;
-            background: #0d6efd;
-            border: none;
-            border-radius: 8px;
-            text-decoration: none;
-            text-align: center;
-            transition: .3s;
-        }
-
-        .btn:hover {
-            background: #084298;
-        }
-
-        /* ===========================
-           MOBILE RESPONSIVE STRATEGY
-        =========================== */
-        @media(max-width: 768px){
-            .navbar {
-                padding: 15px 20px;
-            }
-
-            .logo {
-                font-size: 24px;
-            }
-
-            .menu-toggle {
-                display: block;
-            }
-
-            .nav-links {
-                display: none;
-                flex-direction: column;
-                width: 100%;
-                position: absolute;
-                top: 68px;
-                left: 0;
-                background: #0d6efd;
-                box-shadow: 0 5px 10px rgba(0,0,0,.15);
-            }
-
-            .nav-links.show {
-                display: flex;
-            }
-
-            .nav-links a {
-                margin: 0;
-                padding: 16px;
-                text-align: center;
-                width: 100%;
-                border-top: 1px solid rgba(255,255,255,.15);
-            }
-
-            .container {
-                width: 92%;
-                margin: 30px auto;
-            }
-
-            .success-card {
-                padding: 30px 20px;
-            }
-
-            .receipt-row {
-                flex-direction: column;
-                gap: 4px;
-            }
-
-            .value {
-                word-break: break-all; /* Prevents long string overflows on narrow viewports */
-            }
-        }
-    </style>
-</head>
-<body>
-
-    <div class="navbar">
-        <div class="logo">🛒 SmartCart</div>
-        <div class="menu-toggle" onclick="toggleMenu()">☰</div>
-        <div class="nav-links" id="navLinks">
-            <a href="/user-dashboard">Dashboard</a>
-            <a href="/user/products">Products</a>
-            <a href="/user/cart">Cart</a>
-            <a href="/user/my-orders">Orders</a>
-            <a href="/user-logout">Logout</a>
-        </div>
-    </div>
-
-    <div class="container">
-        <div class="success-card">
-            <div class="success-icon">🎉</div>
-            <h2>Payment Successful!</h2>
-            <p class="message">Thank you for your purchase. Your order has been placed successfully and is being processed.</p>
-
-            <div class="receipt-box">
-                <div class="receipt-row">
-                    <span class="label">Payment ID</span>
-                    <span class="value">{{ payment_id if payment_id else 'N/A' }}</span>
-                </div>
-                <div class="receipt-row">
-                    <span class="label">Order ID</span>
-                    <span class="value">{{ order_id if order_id else 'N/A' }}</span>
-                </div>
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 text-left space-y-3.5 mb-8">
+            <div class="flex flex-col sm:flex-row sm:justify-between border-b border-slate-200 border-dashed pb-2.5 gap-1">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Payment ID</span>
+                <span class="text-sm font-mono font-bold text-slate-800 break-all sm:text-right">{{ payment_id if payment_id else 'N/A' }}</span>
             </div>
-
-            <a href="/user/products" class="btn">
-                Continue Shopping
-            </a>
+            <div class="flex flex-col sm:flex-row sm:justify-between pt-0.5 gap-1">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Order ID</span>
+                <span class="text-sm font-mono font-bold text-slate-800 break-all sm:text-right">{{ order_id if order_id else 'N/A' }}</span>
+            </div>
         </div>
-    </div>
 
-    <script>
-        // Toggle mobile hamburger layout drawer overlay
-        function toggleMenu() {
-            document.getElementById("navLinks").classList.toggle("show");
-        }
-    </script>
-</body>
-</html>
+        <a href="/user/products" class="block w-full text-center bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm py-3.5 px-4 rounded-xl shadow-sm transition uppercase tracking-wider">
+            Continue Shopping
+        </a>
+        
+    </div>
+</div>
+{% endblock %}

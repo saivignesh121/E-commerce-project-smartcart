@@ -17,6 +17,12 @@ from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 app.secret_key = config.SECRET_KEY
+# ------------------- IMAGE UPLOAD CONFIGURATIONS -------------------
+UPLOAD_FOLDER = 'static/uploads/product_images'
+ADMIN_UPLOAD_FOLDER = 'static/uploads/admin_images'
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['ADMIN_UPLOAD_FOLDER'] = ADMIN_UPLOAD_FOLDER  
 
 # ---------------- EMAIL CONFIGURATION ----------------
 app.config['MAIL_SERVER'] = config.MAIL_SERVER
@@ -544,9 +550,9 @@ def admin_profile_update():
 
     old_image_name = admin['profile_image']
 
-    # 3️⃣ Update password only if entered
+    # 3️⃣ Update password only if entered (Added .decode('utf-8') for database compatibility)
     if new_password:
-        hashed_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
+        hashed_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
     else:
         hashed_password = admin['password']  # keep old password
 
@@ -556,11 +562,15 @@ def admin_profile_update():
         from werkzeug.utils import secure_filename
         new_filename = secure_filename(new_image.filename)
 
+        # ─── CRITICAL FIX: AUTOMATICALLY CREATE THE DIRECTORY IF IT IS MISSING ───
+        if not os.path.exists(app.config['ADMIN_UPLOAD_FOLDER']):
+            os.makedirs(app.config['ADMIN_UPLOAD_FOLDER'], exist_ok=True)
+
         # Save new image
         image_path = os.path.join(app.config['ADMIN_UPLOAD_FOLDER'], new_filename)
         new_image.save(image_path)
 
-        # Delete old image
+        # Delete old image safely
         if old_image_name:
             old_image_path = os.path.join(app.config['ADMIN_UPLOAD_FOLDER'], old_image_name)
             if os.path.exists(old_image_path):
@@ -587,8 +597,6 @@ def admin_profile_update():
 
     flash("Profile updated successfully!", "success")
     return redirect('/admin/profile')
-
-
 # =================================================================
 # ROUTE: USER REGISTRATION
 # =================================================================
@@ -1226,6 +1234,84 @@ def download_invoice(order_id):
 
     return response
 
-# ------------------------- RUN APP ------------------------
+
+# =================================================================
+# NEW: DIRECT ADD-TO-CART FROM CATALOG FEED WALL
+# =================================================================
+@app.route('/user/add-to-cart-direct/<int:product_id>')
+def add_to_cart_direct(product_id):
+    if 'user_id' not in session:
+        flash("Please login first!", "danger")
+        return redirect('/user-login')
+
+    if 'cart' not in session:
+        session['cart'] = {}
+
+    cart = session['cart']
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM products WHERE product_id=%s", (product_id,))
+    product = cursor.fetchone()
+    cursor.close()
+    conn.close()
+
+    if not product:
+        flash("Product not found!", "danger")
+        return redirect('/user/products')
+
+    pid = str(product_id)
+    if pid in cart:
+        cart[pid]['quantity'] += 1
+    else:
+        cart[pid] = {
+            'name': product['name'],
+            'price': float(product['price']),
+            'image': product['image'],
+            'quantity': 1
+        }
+
+    session['cart'] = cart
+    flash(f"🛒 Added {product['name']} to your cart!", "success")
+    return redirect('/user/products')
+
+
+# =================================================================
+# NEW: INSTANT "BUY NOW" EXPRESS PIPELINE
+# =================================================================
+@app.route('/user/buy-now/<int:product_id>')
+def buy_now_express(product_id):
+    if 'user_id' not in session:
+        flash("Please login first!", "danger")
+        return redirect('/user-login')
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM products WHERE product_id=%s", (product_id,))
+    product = cursor.fetchone()
+    cursor.close()
+    conn.close()
+
+    if not product:
+        flash("Product not found!", "danger")
+        return redirect('/user/products')
+
+    pid = str(product_id)
+    checkout_items = {
+        pid: {
+            'name': product['name'],
+            'price': float(product['price']),
+            'image': product['image'],
+            'quantity': 1
+        }
+    }
+
+    session["checkout_items"] = checkout_items
+    session["checkout_total"] = float(product['price'])
+
+    return redirect("/user/address")
+
+
+# ------------------------- RUN APPARATUS SERVER ------------------------
 if __name__ == '__main__':
     app.run(debug=True)
