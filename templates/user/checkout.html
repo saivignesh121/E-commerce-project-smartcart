@@ -31,9 +31,9 @@
                                 <td class="p-4">
                                     <span class="font-bold text-slate-800 text-sm line-clamp-1">{{ item.name }}</span>
                                 </td>
-                                <td class="p-4 text-sm font-semibold text-slate-600 text-center">₹{{ item.price }}</td>
+                                <td class="p-4 text-sm font-semibold text-slate-600 text-center">₹{{ "{:,.2f}".format(item.price|float) }}</td>
                                 <td class="p-4 text-sm text-slate-700 text-center font-medium">{{ item.quantity }}</td>
-                                <td class="p-4 text-sm font-bold text-slate-900 text-right">₹{{ (item.price * item.quantity) }}</td>
+                                <td class="p-4 text-sm font-bold text-slate-900 text-right">₹{{ "{:,.2f}".format((item.price|float) * (item.quantity|int)) }}</td>
                             </tr>
                             {% endfor %}
                         {% else %}
@@ -54,7 +54,7 @@
             <div class="space-y-3.5">
                 <div class="flex justify-between items-center text-sm font-medium text-slate-600">
                     <span>Items Total</span>
-                    <strong class="text-slate-800">₹{{ total if total else '0.00' }}</strong>
+                    <strong class="text-slate-800">₹{{ "{:,.2f}".format(total|float) if total else '0.00' }}</strong>
                 </div>
                 <div class="flex justify-between items-center text-sm font-medium text-slate-600 pb-3 border-b border-slate-100 border-dashed">
                     <span>Shipping Charges</span>
@@ -64,10 +64,10 @@
 
             <div class="flex justify-between items-center pt-2">
                 <span class="text-sm font-bold text-slate-800">Total Amount Payable</span>
-                <span class="text-2xl font-black text-emerald-600">₹{{ total if total else '0.00' }}</span>
+                <span class="text-2xl font-black text-emerald-600">₹{{ "{:,.2f}".format(total|float) if total else '0.00' }}</span>
             </div>
 
-            <a href="/place_order" class="block w-full text-center bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm py-3.5 px-4 rounded-xl shadow-sm transition uppercase tracking-wider mt-4">
+            <a href="/user/pay" class="block w-full text-center bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm py-3.5 px-4 rounded-xl shadow-sm transition uppercase tracking-wider mt-4">
                 Place Order &amp; Pay
             </a>
         </div>

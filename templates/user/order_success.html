@@ -23,9 +23,22 @@
                 <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Amount Paid</span>
                 <span class="text-base font-extrabold text-emerald-600 sm:text-right">₹{{ order.amount if order else '0.00' }}</span>
             </div>
-            <div class="flex flex-col sm:flex-row sm:justify-between pt-0.5 gap-1">
+            <div class="flex flex-col sm:flex-row sm:justify-between border-b border-slate-200 border-dashed pb-2.5 gap-1">
                 <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Order Date</span>
                 <span class="text-sm font-semibold text-slate-700 sm:text-right">{{ order.created_at if order else 'N/A' }}</span>
+            </div>
+            
+            <div class="flex flex-col sm:flex-row sm:justify-between pt-0.5 gap-2">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400 shrink-0">Shipping Address</span>
+                <div class="text-xs text-slate-600 sm:text-right space-y-0.5 max-w-sm">
+                    {% if session.get('address') %}
+                        <strong class="text-slate-800 font-bold block text-sm mb-1">{{ session['address']['fullname'] }}</strong>
+                        <span class="block text-slate-500 font-medium">📞 {{ session['address']['mobile'] }}</span>
+                        <p class="mt-1 font-medium leading-relaxed">{{ session['address']['address'] }}, {{ session['address']['city'] }}, {{ session['address']['state'] }} - <span class="font-bold text-slate-700">{{ session['address']['pincode'] }}</span></p>
+                    {% else %}
+                        <span class="text-slate-400 italic">Address details data stream unmapped. Please reference downloaded invoice documents.</span>
+                    {% endif %}
+                </div>
             </div>
         </div>
 

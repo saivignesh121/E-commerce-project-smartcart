@@ -2,22 +2,27 @@
 {% block title %}All Products | SmartCart{% endblock %}
 
 {% block content %}
-<main class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 w-full flex-grow">
+<main class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 w-full flex-grow">
     
-    <div class="mb-6 flex flex-wrap justify-between items-center gap-4">
-        <h2 class="text-2xl font-bold text-slate-800 tracking-tight sm:text-3xl">All Products</h2>
+    <!-- Header Section -->
+    <div class="mb-5 flex flex-wrap justify-between items-center gap-3">
+        <div>
+            <h2 class="text-xl font-black text-slate-900 tracking-tight sm:text-2xl">All Products</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Explore our sleek, updated catalog collection.</p>
+        </div>
         {% if search_query or selected_category %}
-            <a href="/user/products" class="text-xs font-bold uppercase tracking-wider text-rose-500 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 px-3 py-2 rounded-xl transition-all duration-150">
+            <a href="/user/products" class="text-[10px] font-bold uppercase tracking-wider text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 px-3 py-2 rounded-lg transition border border-rose-200/40">
                 Clear All Filters ×
             </a>
         {% endif %}
     </div>
 
+    <!-- Flash Messages Block -->
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-            <div class="mb-6 space-y-2">
+            <div class="mb-5 space-y-1.5">
                 {% for category, message in messages %}
-                    <div class="p-4 rounded-xl text-sm font-medium bg-emerald-50 text-emerald-700 border border-emerald-100">
+                    <div class="p-3 rounded-lg text-xs font-medium border bg-emerald-50 text-emerald-700 border-emerald-100 shadow-xs text-center">
                         {{ message }}
                     </div>
                 {% endfor %}
@@ -25,28 +30,29 @@
         {% endif %}
     {% endwith %}
 
-    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 mb-8">
-        <form method="GET" action="/user/products" class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+    <!-- Filter/Search Panel -->
+    <div class="bg-white p-4 rounded-xl shadow-xs border border-slate-200/60 mb-6">
+        <form method="GET" action="/user/products" class="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
             
             <div class="md:col-span-7 flex gap-2">
                 <input 
                     type="text" 
                     name="search" 
-                    placeholder="Search for products by name or description..." 
+                    placeholder="Search products..." 
                     value="{{ search_query if search_query else '' }}"
-                    class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all duration-150"
+                    class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"
                 >
-                <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm px-6 rounded-xl transition-colors duration-150 shrink-0 cursor-pointer">
+                <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-5 rounded-xl transition shrink-0 cursor-pointer shadow-xs">
                     Search
                 </button>
             </div>
 
-            <div class="md:col-span-5 flex items-center gap-3">
-                <label class="text-xs font-bold uppercase tracking-wider text-slate-400 shrink-0 hidden sm:inline-block">Category:</label>
+            <div class="md:col-span-5 flex items-center gap-2">
+                <label class="text-[10px] font-bold uppercase tracking-wider text-slate-400 shrink-0 hidden sm:inline-block">Category:</label>
                 <select 
                     name="category" 
                     onchange="this.form.submit()" 
-                    class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all duration-150 appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2364748B%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2F%3E')] bg-[length:12px_12px] bg-[right_16px_center] bg-no-repeat cursor-pointer"
+                    class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2364748B%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2F%3E')] bg-[length:10px_10px] bg-[right_12px_center] bg-no-repeat cursor-pointer"
                 >
                     <option value="">All Categories</option>
                     {% for cat in categories %}
@@ -60,48 +66,52 @@
         </form>
     </div>
 
+    <!-- Ultra-Concise Responsive Product Grid System -->
     {% if products and products|length > 0 %}
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {% for product in products %}
-                <div class="group bg-white rounded-2xl shadow-sm hover:shadow-xl border border-slate-100 p-5 transition-all duration-300 flex flex-col justify-between hover:-translate-y-1">
+                <div class="group bg-white rounded-xl border border-slate-200/60 p-3 shadow-xs hover:shadow-sm transition-all duration-300 flex flex-col h-full hover:-translate-y-0.5">
                     
-                    <div class="bg-slate-50 rounded-xl p-4 flex items-center justify-center h-48 mb-4 overflow-hidden relative border border-slate-50">
+                    <!-- Highly Compact Image Frame -->
+                    <div class="bg-slate-50/80 rounded-lg flex items-center justify-center h-44 w-full mb-2.5 overflow-hidden p-2 border border-slate-100 shrink-0">
                         <img src="/static/uploads/product_images/{{ product.image }}" 
                              alt="{{ product.name }}"
-                             class="max-w-full max-h-full object-contain mix-blend-multiply transform group-hover:scale-105 transition-transform duration-300">
+                             class="max-w-full max-h-full object-contain mix-blend-multiply transition-transform duration-300 group-hover:scale-102">
                     </div>
 
-                    <div class="flex-1 flex flex-col justify-between">
-                        <div>
-                            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
+                    <!-- Meta & Content Details Block -->
+                    <div class="flex-grow flex flex-col justify-between">
+                        <div class="space-y-0.5">
+                            <span class="text-[9px] font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50/60 px-1.5 py-0.5 rounded inline-block">
                                 {{ product.category }}
                             </span>
-                            <h3 class="font-bold text-slate-800 text-base line-clamp-2 tracking-tight group-hover:text-indigo-600 transition-colors duration-150 h-12 overflow-hidden">
+                            <h3 class="font-bold text-slate-800 text-xs leading-tight tracking-tight group-hover:text-indigo-600 transition-colors duration-150 line-clamp-1 overflow-hidden">
                                 {{ product.name }}
                             </h3>
                         </div>
                         
-                        <!-- Modified Actions Section -->
-                        <div class="mt-4 pt-3 border-t border-slate-50 space-y-3">
-                            <div class="flex items-center justify-between">
+                        <!-- Concise Actions Box -->
+                        <div class="mt-2.5 pt-2 border-t border-slate-100 space-y-2">
+                            <div class="flex items-end justify-between leading-none">
                                 <div class="flex flex-col">
-                                    <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Price</span>
-                                    <span class="font-extrabold text-slate-900 text-lg">₹{{ product.price }}</span>
+                                    <span class="text-[9px] uppercase font-bold tracking-wider text-slate-400 mb-0.5">Price</span>
+                                    <span class="font-black text-slate-900 text-sm">₹{{ "{:,.2f}".format(product.price|float) }}</span>
                                 </div>
-                                <a href="/user/product/{{ product.product_id }}" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition-colors duration-150">
-                                    View Details &rarr;
+                                <a href="/user/product/{{ product.product_id }}" class="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 transition-colors">
+                                    Details &rarr;
                                 </a>
                             </div>
 
-                            <!-- Button Grid for Add and Buy Now -->
-                            <div class="grid grid-cols-2 gap-2">
+                            <!-- Tightened Action Button Array -->
+                            <div class="grid grid-cols-2 gap-2 pt-0.5">
                                 <a href="/user/add-to-cart-direct/{{ product.product_id }}" 
-                                   class="text-center bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[11px] uppercase tracking-wider py-2.5 px-2 rounded-xl transition-colors duration-150"
+                                   class="inline-flex items-center justify-center gap-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[10px] uppercase tracking-wider py-2 rounded-lg transition duration-150 cursor-pointer"
                                 >
                                     🛒 Add
                                 </a>
+                                <!-- FIXED DIRECT LINK PIPELINE TRIGGER -->
                                 <a href="/user/buy-now/{{ product.product_id }}" 
-                                   class="text-center bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] uppercase tracking-wider py-2.5 px-2 rounded-xl shadow-sm transition-colors duration-150"
+                                   class="inline-flex items-center justify-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] uppercase tracking-wider py-2 rounded-lg shadow-xs transition duration-150 cursor-pointer"
                                 >
                                     ⚡ Buy Now
                                 </a>
@@ -113,13 +123,14 @@
             {% endfor %}
         </div>
     {% else %}
-        <div class="text-center py-16 bg-white rounded-2xl border border-slate-100 shadow-sm max-w-xl mx-auto my-4 px-4">
-            <div class="text-slate-300 text-6xl mb-4 select-none">🔍</div>
-            <h3 class="text-lg font-bold text-slate-800">No Matching Products Found</h3>
-            <p class="text-slate-500 text-sm mt-2 max-w-sm mx-auto">
-                We couldn't find anything matching your search settings. Try updating your text parameters or clearing your category selections.
+        <!-- Empty Grid Fallback -->
+        <div class="text-center py-12 bg-white rounded-xl border border-slate-200/80 shadow-xs max-w-xl mx-auto my-4 px-4">
+            <div class="text-slate-300 text-5xl mb-3 select-none">🔍</div>
+            <h3 class="text-sm font-bold text-slate-800">No Matching Products Found</h3>
+            <p class="text-slate-500 text-xs mt-1 max-w-sm mx-auto">
+                We couldn't find anything matching your search settings.
             </p>
-            <a href="/user/products" class="inline-block mt-6 text-xs font-bold uppercase tracking-wider text-white bg-indigo-600 hover:bg-indigo-700 px-5 py-3 rounded-xl transition-all duration-150 shadow-xs">
+            <a href="/user/products" class="inline-block mt-4 text-[10px] font-bold uppercase tracking-wider text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg transition shadow-xs">
                 Reset Catalog Grid View
             </a>
         </div>

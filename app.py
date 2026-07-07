@@ -390,70 +390,70 @@ def update_item_page(item_id):
     return render_template("admin/update_item.html", product=product)
 
 # =================================================================
-# ROUTE-12: UPDATE PRODUCT + OPTIONAL IMAGE REPLACE
+# ROUTE-12: UPDATE PRODUCT + GET FORM PRE-FILL
 # =================================================================
-@app.route('/admin/update-item/<int:item_id>', methods=['POST'])
+@app.route('/admin/update-item/<int:item_id>', methods=['GET', 'POST']) # <-- Added 'GET' here
 def update_item(item_id):
 
     if 'admin_id' not in session:
         flash("Please login!", "danger")
         return redirect('/admin-login')
 
-    # 1️⃣ Get updated form data
-    name = request.form['name']
-    description = request.form['description']
-    category = request.form['category']
-    price = request.form['price']
-
-    new_image = request.files['image']
-
-    # 2️⃣ Fetch old product data
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
+    
+    # Fetch old product data first regardless of method
     cursor.execute("SELECT * FROM products WHERE product_id = %s", (item_id,))
     product = cursor.fetchone()
 
     if not product:
+        cursor.close()
+        conn.close()
         flash("Product not found!", "danger")
         return redirect('/admin/item-list')
 
-    old_image_name = product['image']
+    # ─── CASE 1: USER SUBMITTED THE MODIFICATION FORM (POST) ───
+    if request.method == 'POST':
+        name = request.form['name']
+        description = request.form['description']
+        category = request.form['category']
+        price = request.form['price']
+        new_image = request.files['image']
 
-    # 3️⃣ If admin uploaded a new image → replace it
-    if new_image and new_image.filename != "":
-        
-        # Secure filename
-        from werkzeug.utils import secure_filename
-        new_filename = secure_filename(new_image.filename)
+        old_image_name = product['image']
 
-        # Save new image
-        new_image_path = os.path.join(app.config['UPLOAD_FOLDER'], new_filename)
-        new_image.save(new_image_path)
+        # If admin uploaded a new image → replace it
+        if new_image and new_image.filename != "":
+            new_filename = secure_filename(new_image.filename)
+            new_image_path = os.path.join(app.config['UPLOAD_FOLDER'], new_filename)
+            new_image.save(new_image_path)
 
-        # Delete old image file
-        old_image_path = os.path.join(app.config['UPLOAD_FOLDER'], old_image_name)
-        if os.path.exists(old_image_path):
-            os.remove(old_image_path)
+            old_image_path = os.path.join(app.config['UPLOAD_FOLDER'], old_image_name)
+            if os.path.exists(old_image_path):
+                os.remove(old_image_path)
 
-        final_image_name = new_filename
+            final_image_name = new_filename
+        else:
+            final_image_name = old_image_name
 
-    else:
-        # No new image uploaded → keep old one
-        final_image_name = old_image_name
+        # Update product in the database
+        cursor.execute("""
+            UPDATE products
+            SET name=%s, description=%s, category=%s, price=%s, image=%s
+            WHERE product_id=%s
+        """, (name, description, category, price, final_image_name, item_id))
 
-    # 4️⃣ Update product in the database
-    cursor.execute("""
-        UPDATE products
-        SET name=%s, description=%s, category=%s, price=%s, image=%s
-        WHERE product_id=%s
-    """, (name, description, category, price, final_image_name, item_id))
+        conn.commit()
+        cursor.close()
+        conn.close()
 
-    conn.commit()
+        flash("Product updated successfully!", "success")
+        return redirect('/admin/item-list')
+
+    # ─── CASE 2: USER IS VISITING THE PAGE TO VIEW THE EDIT FORM (GET) ───
     cursor.close()
     conn.close()
-
-    flash("Product updated successfully!", "success")
-    return redirect('/admin/item-list')
+    return render_template("admin/update_item.html", product=product)
 
 # ROUTE 13: DELETE PRODUCT  ← Write it here
 # =================================================================
@@ -1311,7 +1311,69 @@ def buy_now_express(product_id):
 
     return redirect("/user/address")
 
+@app.route('/user/verify-payment', methods=['POST', 'GET'])
+def verify_payment_and_place_order():
+    if 'user_id' not in session:
+        flash("Session expired!", "danger")
+        return redirect('/user-login')
 
+    user_id = session['user_id']
+    
+    # ─── NOTE: Get your Razorpay details from request (form, args, or json) ───
+    # Depending on how your gateway sends it, it might be request.form or request.args
+    razorpay_payment_id = request.values.get('razorpay_payment_id')
+    razorpay_order_id = request.values.get('razorpay_order_id', 'pay_mock_id')
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # 1️⃣ FIRST: Fetch what is inside the cart BEFORE doing anything else
+    cursor.execute("""
+        SELECT c.*, p.name as product_name, p.price 
+        FROM cart c 
+        JOIN products p ON c.product_id = p.product_id 
+        WHERE c.user_id = %s
+    """, (user_id,))
+    cart_items = cursor.fetchall()
+
+    # If the user has refreshed the page or cart drops completely out of sync
+    if not cart_items:
+        cursor.close()
+        conn.close()
+        flash("Cart is empty. Cannot create order.", "danger")
+        return redirect('/user/products')
+
+    # 2️⃣ Calculate the Grand total sum value parameters safely
+    grand_total = sum(float(item['price']) * int(item['quantity']) for item in cart_items)
+
+    # 3️⃣ Create a new master record in the 'orders' table
+    cursor.execute("""
+        INSERT INTO orders (user_id, razorpay_payment_id, amount, status) 
+        VALUES (%s, %s, %s, 'Paid')
+    """, (user_id, razorpay_payment_id, grand_total))
+    
+    # Capture the auto-generated unique Order ID
+    new_order_id = cursor.lastrowid
+
+    # 4️⃣ Move the item list out of the cart and into the permanent 'order_items' table
+    for item in cart_items:
+        cursor.execute("""
+            INSERT INTO order_items (order_id, product_name, quantity, price) 
+            VALUES (%s, %s, %s, %s)
+        """, (new_order_id, item['product_name'], item['quantity'], item['price']))
+
+    # 5️⃣ CRITICAL CORRECTION: Clear the user's cart ONLY AFTER copying the items safely
+    cursor.execute("DELETE FROM cart WHERE user_id = %s", (user_id,))
+    
+    # Commit changes permanently to the database
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    # 6️⃣ SUCCESSFUL PIPELINE ROUTING DISPLAY REDIRECT
+    # Send the user to the success view with the exact newly created order primary key ID
+    return redirect(f'/user/order-success/{new_order_id}')
 # ------------------------- RUN APPARATUS SERVER ------------------------
+
 if __name__ == '__main__':
     app.run(debug=True)

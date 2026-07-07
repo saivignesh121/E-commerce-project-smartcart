@@ -9,9 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700;900&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
+        body { font-family: 'Inter', sans-serif; }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen antialiased flex flex-col">
@@ -22,13 +20,13 @@
                 
                 <div class="flex items-center gap-3">
                     <h2 class="text-xl font-black text-white tracking-wider uppercase">
-                        {% if session.get('admin_user') %}
+                        {% if session.get('admin_id') %}
                             <a href="/admin-dashboard" class="focus:outline-none">SmartCart</a>
                         {% else %}
                             <a href="/user-dashboard" class="focus:outline-none">SmartCart</a>
                         {% endif %}
                     </h2>
-                    {% if session.get('admin_user') %}
+                    {% if session.get('admin_id') %}
                         <span class="bg-indigo-500 text-white text-[10px] font-extrabold px-2 py-0.5 rounded uppercase tracking-wider select-none">Admin</span>
                     {% elif session.get('user_id') %}
                         <span class="bg-emerald-500 text-white text-[10px] font-extrabold px-2 py-0.5 rounded uppercase tracking-wider select-none">User</span>
@@ -36,29 +34,28 @@
                 </div>
                 
                 <div class="hidden md:flex items-center space-x-6 text-sm font-semibold text-slate-300">
-                    {% if session.get('admin_user') %}
-                        <a href="/admin-dashboard" class="hover:text-white transition-colors duration-150">Dashboard</a>
-                        <a href="/admin/add-item" class="hover:text-white transition-colors duration-150">Add Product</a>
-                        <a href="/admin/item-list" class="hover:text-white transition-colors duration-150">View Products</a>
-                        <a href="/user-logout" class="bg-slate-800 hover:bg-red-600 px-3 py-1.5 rounded-lg text-white transition-all duration-150 text-xs font-bold uppercase tracking-wider shadow-sm">Logout</a>
+                    {% if session.get('admin_id') %}
+                        <a href="/admin-dashboard" class="hover:text-white transition">Dashboard</a>
+                        <a href="/admin/add-item" class="hover:text-white transition">Add Product</a>
+                        <a href="/admin/item-list" class="hover:text-white transition">View Products</a>
+                        <a href="/admin/profile" class="hover:text-white transition">Admin Profile</a>
+                        <a href="/admin-logout" class="bg-slate-800 hover:bg-red-600 px-3 py-1.5 rounded-lg text-white transition text-xs font-bold uppercase tracking-wider shadow-sm">Logout</a>
                     
                     {% elif session.get('user_id') %}
-                        <a href="/user-dashboard" class="hover:text-white transition-colors duration-150">Dashboard</a>
-                        <a href="/user/products" class="hover:text-white transition-colors duration-150">Products</a>
-                        <a href="/user/cart" class="hover:text-white transition-colors duration-150 flex items-center gap-1">
-                            Cart 🛒
-                        </a>
-                        <a href="/user/my-orders" class="hover:text-white transition-colors duration-150">My Orders</a>
-                        <a href="/user-logout" class="bg-slate-800 hover:bg-red-600 px-3 py-1.5 rounded-lg text-white transition-all duration-150 text-xs font-bold uppercase tracking-wider shadow-sm">Logout</a>
+                        <a href="/user-dashboard" class="hover:text-white transition">Dashboard</a>
+                        <a href="/user/products" class="hover:text-white transition">Products</a>
+                        <a href="/user/cart" class="hover:text-white transition">Cart 🛒</a>
+                        <a href="/user/my-orders" class="hover:text-white transition">My Orders</a>
+                        <a href="/user-logout" class="bg-slate-800 hover:bg-red-600 px-3 py-1.5 rounded-lg text-white transition text-xs font-bold uppercase tracking-wider shadow-sm">Logout</a>
                     
                     {% else %}
-                        <a href="/user-login" class="hover:text-white transition-colors duration-150">Sign In</a>
-                        <a href="/user-register" class="bg-indigo-600 hover:bg-indigo-700 px-4 py-1.5 rounded-xl text-white transition-all duration-150 text-xs font-bold uppercase tracking-wider shadow-sm">Create Account</a>
+                        <a href="/user-login" class="hover:text-white transition">Sign In</a>
+                        <a href="/user-register" class="bg-indigo-600 hover:bg-indigo-700 px-4 py-1.5 rounded-xl text-white transition text-xs font-bold uppercase tracking-wider shadow-sm">Create Account</a>
                     {% endif %}
                 </div>
 
                 <div class="md:hidden flex items-center">
-                    <button id="mobile-menu-btn" class="text-slate-400 hover:text-white focus:outline-none cursor-pointer p-1 rounded-lg transition-colors duration-150" aria-label="Toggle Menu">
+                    <button id="mobile-menu-btn" class="text-slate-400 hover:text-white focus:outline-none cursor-pointer p-1 rounded-lg" aria-label="Toggle Menu">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path id="menu-icon" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                         </svg>
@@ -67,40 +64,39 @@
             </div>
         </div>
 
-        <div id="mobile-menu" class="hidden md:hidden bg-slate-800 border-t border-slate-700 px-4 pt-2 pb-4 space-y-2 text-sm font-medium text-slate-300 shadow-inner">
-            {% if session.get('admin_user') %}
-                <a href="/admin-dashboard" class="block py-2.5 px-3 rounded-lg hover:bg-slate-700 hover:text-white transition-all duration-150">Dashboard</a>
-                <a href="/admin/add-item" class="block py-2.5 px-3 rounded-lg hover:bg-slate-700 hover:text-white transition-all duration-150">Add Product</a>
-                <a href="/admin/item-list" class="block py-2.5 px-3 rounded-lg hover:bg-slate-700 hover:text-white transition-all duration-150">View Products</a>
+        <div id="mobile-menu" class="hidden md:hidden bg-slate-800 border-t border-slate-700 px-4 pt-2 pb-4 space-y-2 text-sm font-medium text-slate-300">
+            {% if session.get('admin_id') %}
+                <a href="/admin-dashboard" class="block py-2.5 px-3 rounded-lg hover:bg-slate-700 hover:text-white transition">Dashboard</a>
+                <a href="/admin/add-item" class="block py-2.5 px-3 rounded-lg hover:bg-slate-700 hover:text-white transition">Add Product</a>
+                <a href="/admin/item-list" class="block py-2.5 px-3 rounded-lg hover:bg-slate-700 hover:text-white transition">View Products</a>
+                <a href="/admin/profile" class="block py-2.5 px-3 rounded-lg hover:bg-slate-700 hover:text-white transition">Admin Profile</a>
                 <div class="pt-3 mt-1 border-t border-slate-700">
-                    <a href="/user-logout" class="block py-2.5 px-3 text-center bg-red-600 hover:bg-red-700 rounded-lg text-white font-bold transition-colors duration-150 tracking-wider uppercase text-xs shadow-sm">Logout</a>
+                    <a href="/admin-logout" class="block py-2.5 px-3 text-center bg-red-600 hover:bg-red-700 rounded-lg text-white font-bold transition tracking-wider uppercase text-xs">Logout</a>
                 </div>
             {% elif session.get('user_id') %}
-                <a href="/user-dashboard" class="block py-2.5 px-3 rounded-lg hover:bg-slate-700 hover:text-white transition-all duration-150">Dashboard</a>
-                <a href="/user/products" class="block py-2.5 px-3 rounded-lg hover:bg-slate-700 hover:text-white transition-all duration-150">Products</a>
-                <a href="/user/cart" class="block py-2.5 px-3 rounded-lg hover:bg-slate-700 hover:text-white transition-all duration-150">Cart 🛒</a>
-                <a href="/user/my-orders" class="block py-2.5 px-3 rounded-lg hover:bg-slate-700 hover:text-white transition-all duration-150">My Orders</a>
+                <a href="/user-dashboard" class="block py-2.5 px-3 rounded-lg hover:bg-slate-700 hover:text-white transition">Dashboard</a>
+                <a href="/user/products" class="block py-2.5 px-3 rounded-lg hover:bg-slate-700 hover:text-white transition">Products</a>
+                <a href="/user/cart" class="block py-2.5 px-3 rounded-lg hover:bg-slate-700 hover:text-white transition">Cart 🛒</a>
+                <a href="/user/my-orders" class="block py-2.5 px-3 rounded-lg hover:bg-slate-700 hover:text-white transition">My Orders</a>
                 <div class="pt-3 mt-1 border-t border-slate-700">
-                    <a href="/user-logout" class="block py-2.5 px-3 text-center bg-red-600 hover:bg-red-700 rounded-lg text-white font-bold transition-colors duration-150 tracking-wider uppercase text-xs shadow-sm">Logout</a>
+                    <a href="/user-logout" class="block py-2.5 px-3 text-center bg-red-600 hover:bg-red-700 rounded-lg text-white font-bold transition tracking-wider uppercase text-xs">Logout</a>
                 </div>
             {% else %}
-                <a href="/user-login" class="block py-2.5 px-3 rounded-lg hover:bg-slate-700 hover:text-white transition-all duration-150">Sign In</a>
-                <a href="/user-register" class="block py-2.5 px-3 text-center bg-indigo-600 hover:bg-indigo-700 rounded-lg text-white font-bold transition-colors duration-150 tracking-wider uppercase text-xs shadow-sm">Create Account</a>
+                <a href="/user-login" class="block py-2.5 px-3 rounded-lg hover:bg-slate-700 hover:text-white transition">Sign In</a>
+                <a href="/user-register" class="block py-2.5 px-3 text-center bg-indigo-600 hover:bg-indigo-700 rounded-lg text-white font-bold transition tracking-wider uppercase text-xs">Create Account</a>
             {% endif %}
         </div>
     </nav>
 
     <main class="flex-grow w-full flex flex-col">
-        {% block content %}
-        {% endblock %}
+        {% block content %}{% endblock %}
     </main>
 
-    <footer class="bg-slate-900 border-t border-slate-800 text-center py-4 text-xs font-medium text-slate-500 tracking-wide mt-auto select-none print:hidden">
+    <footer class="bg-slate-900 border-t border-slate-800 text-center py-4 text-xs font-medium text-slate-500 mt-auto">
         &copy; 2026 SmartCart Enterprise Systems. All rights reserved.
     </footer>
 
     <script>
-        // Global controller for managing mobile hamburger navigation transformations
         const menuBtn = document.getElementById('mobile-menu-btn');
         const mobileDrawer = document.getElementById('mobile-menu');
         const svgIconShape = document.getElementById('menu-icon');

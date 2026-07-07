@@ -9,9 +9,9 @@
         <h2 class="text-2xl font-black text-slate-900 tracking-tight mb-1">Complete Your Purchase</h2>
         <p class="text-xs font-semibold text-slate-400 mb-8 uppercase tracking-wider">Please do not refresh or close this window during processing</p>
 
-        <div class="bg-slate-50 border border-dashed border-slate-300 rounded-xl p-5 mb-8">
+        <div class="bg-slate-50 border border-dashed border-slate-200 rounded-xl p-5 mb-8">
             <span class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Total Payable Amount</span>
-            <span class="text-3xl font-black text-emerald-600">₹{{ total if total else '0.00' }}</span>
+            <span class="text-3xl font-black text-emerald-600">₹{{ "{:,.2f}".format(total|float) if total else '0.00' }}</span>
         </div>
 
         {% if not order_id %}
@@ -33,47 +33,53 @@
 {% if order_id %}
 <script>
     var options = {
-        key: "{{ key_id }}",
-        amount: "{{ (total * 100) | int }}", 
-        currency: "INR",
-        name: "SmartCart",
-        description: "Order Payment",
-        order_id: "{{ order_id }}",
-        handler: function (response) {
+        "key": "{{ key_id }}",
+        "amount": "{{ (total * 100) | int }}", 
+        "currency": "INR",
+        "name": "SmartCart",
+        "description": "Secure Checkout Payment Portal",
+        "order_id": "{{ order_id }}",
+        
+        // ─── HANDLER PIPELINE: Submits securely to your backend verification route ───
+        "handler": function (response) {
             var form = document.createElement("form");
-            form.method = "POST";
-            form.action = "/verify-payment";
+            form.setAttribute("method", "POST");
+            form.setAttribute("action", "/verify-payment");
 
             var fields = {
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_signature: response.razorpay_signature,
+                "razorpay_payment_id": response.razorpay_payment_id,
+                "razorpay_order_id": response.razorpay_order_id,
+                "razorpay_signature": response.razorpay_signature,
             };
 
-            for (var name in fields) {
+            for (var key in fields) {
                 var input = document.createElement("input");
-                input.type = "hidden";
-                input.name = name;
-                input.value = fields[name];
+                input.setAttribute("type", "hidden");
+                input.setAttribute("name", key);
+                input.setAttribute("value", fields[key]);
                 form.appendChild(input);
             }
 
             document.body.appendChild(form);
             form.submit();
         },
-        theme: {
-            color: "#4f46e5" // Updated to match your Tailwind indigo configuration primary theme color accent
+        "prefill": {
+            "name": "{{ address.fullname if address else '' }}",
+            "contact": "{{ address.mobile if address else '' }}"
+        },
+        "theme": {
+            "color": "#4f46e5" 
         }
     };
 
     var rzp = new Razorpay(options);
 
-    // Auto-launch verification modal layout dynamically on initial viewport loading hook
+    // Auto-launch Razorpay frame on initialization
     window.onload = function() {
         rzp.open();
     };
 
-    // Manual backup click execution hook fallback trigger
+    // Backup click trigger
     document.getElementById("rzp-button").onclick = function (e) {
         rzp.open();
         e.preventDefault();
