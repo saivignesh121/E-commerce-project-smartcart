@@ -48,6 +48,9 @@
             font-size: 13px;
             line-height: 1.5;
         }
+        .details-text strong {
+            color: #1e3a8a;
+        }
         .items-table {
             width: 100%;
             border-collapse: collapse;
@@ -109,20 +112,20 @@
                 <div class="section-title">Order Details:</div>
                 <div class="details-text">
                     <strong>Order ID:</strong> #{{ order.order_id }}<br>
-                    <strong>Payment ID:</strong> {{ order.razorpay_payment_id }}<br>
+                    <strong>Payment ID:</strong> {{ order.razorpay_payment_id if order.razorpay_payment_id else 'N/A' }}<br>
                     <strong>Date:</strong> {{ order.created_at.strftime('%B %d, %Y') if order.created_at else 'July 07, 2026' }}<br>
                     <strong>Status:</strong> Paid
                 </div>
             </td>
             <td>
-                <div class="section-title">Address:</div>
+                <div class="section-title">Shipping Information:</div>
                 <div class="details-text">
-                    {% if session.get('address') %}
-                        {{ session['address']['fullname'] }}<br>
-                        {{ session['address']['mobile'] }}<br>
-                        {{ session['address']['address'] }}<br>
-                        {{ session['address']['city'] }}, {{ session['address']['state'] }}<br>
-                        India, {{ session['address']['pincode'] }}.
+                    {% if order.fullname %}
+                        <strong>{{ order.fullname }}</strong><br>
+                        Phone: {{ order.mobile }}<br>
+                        {{ order.address }}<br>
+                        {{ order.city }}, {{ order.state }}<br>
+                        India - {{ order.pincode }}
                     {% else %}
                         Mani,<br>
                         9123413543,<br>
@@ -152,26 +155,26 @@
             <tr>
                 <td>{{ item.product_name }}</td>
                 <td class="text-center">{{ item.quantity }}</td>
-                <td class="text-right">Rs. {{ "{:.1f}".format(item.price|float) }}</td>
-                <td class="text-right">Rs. {{ "{:.1f}".format((item.price|float) * (item.quantity|int)) }}</td>
+                <td class="text-right">Rs. {{ "{:,.2f}".format(item.price|float) }}</td>
+                <td class="text-right">Rs. {{ "{:,.2f}".format((item.price|float) * (item.quantity|int)) }}</td>
             </tr>
             {% else %}
             <tr>
-                <td>Iphone X</td>
+                <td>Saree</td>
                 <td class="text-center">1</td>
-                <td class="text-right">Rs. 30000.0</td>
-                <td class="text-right">Rs. 30000.0</td>
+                <td class="text-right">Rs. 9,999.80</td>
+                <td class="text-right">Rs. 9,999.80</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 
     <div class="total-section">
-        <span class="grand-total">Grand Total: Rs.{{ "{:.1f}".format(order.amount|float) if order else '30000.0' }}</span>
+        <span class="grand-total">Grand Total: Rs. {{ "{:,.2f}".format(order.amount|float) if order else '9,999.80' }}</span>
     </div>
 
     <div class="footer-note">
-        This is a computer generated invoice and does not require a signature.
+        This is a computer generated invoice and does not require a physical signature.
     </div>
 
 </body>

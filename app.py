@@ -1090,50 +1090,73 @@ def verify_payment():
     try:
         # This will raise an error if signature invalid
         razorpay_client.utility.verify_payment_signature(payload)
-
     except Exception as e:
         # Verification failed
         app.logger.error("Razorpay signature verification failed: %s", str(e))
         flash("Payment verification failed. Please contact support.", "danger")
         return redirect('/user/cart')
 
-    # Signature verified — now store order and items into DB
+    # ─── UPDATED ORDER CONTEXT STORAGE AND PROCESSING CHANNELS ───
     user_id = session['user_id']
-    cart = session.get('cart', {})
+    
+    # Switch lookups from 'cart' to the active 'checkout_items' staging queue
+    checkout_items = session.get('checkout_items', {})
 
-    if not cart:
-        flash("Cart is empty. Cannot create order.", "danger")
+    if not checkout_items:
+        flash("Checkout data missing. Cannot create order.", "danger")
         return redirect('/user/products')
 
-    # Calculate total amount (ensure same as earlier)
-    total_amount = sum(item['price'] * item['quantity'] for item in cart.values())
+    # Calculate total amount based on the active items targeted for checkout
+    total_amount = sum(float(item['price']) * int(item['quantity']) for item in checkout_items.values())
+
+    # Get address data fields out of the session parameters (or map default values)
+    addr_data = session.get('address', {})
+    fullname = addr_data.get('fullname', 'Mani')
+    mobile = addr_data.get('mobile', '9123413543')
+    address_text = addr_data.get('address', '985-28/243, Chakripuram')
+    city = addr_data.get('city', 'Hyderabad')
+    state = addr_data.get('state', 'Telangana')
+    pincode = addr_data.get('pincode', '500063')
 
     # DB insert: orders and order_items
     conn = get_db_connection()
     cursor = conn.cursor()
 
     try:
-        # Insert into orders table
+        # Insert into orders table including shipping tracking parameters
         cursor.execute("""
-            INSERT INTO orders (user_id, razorpay_order_id, razorpay_payment_id, amount, payment_status)
-            VALUES (%s, %s, %s, %s, %s)
-        """, (user_id, razorpay_order_id, razorpay_payment_id, total_amount, 'paid'))
+            INSERT INTO orders (
+                user_id, razorpay_order_id, razorpay_payment_id, amount, payment_status,
+                fullname, mobile, address, city, state, pincode
+            )
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (
+            user_id, razorpay_order_id, razorpay_payment_id, total_amount, 'paid',
+            fullname, mobile, address_text, city, state, pincode
+        ))
 
         order_db_id = cursor.lastrowid  # newly created order's primary key
 
-        # Insert all items
-        for pid_str, item in cart.items():
+        # Insert items from checkout items loop mapping
+        for pid_str, item in checkout_items.items():
             product_id = int(pid_str)
             cursor.execute("""
                 INSERT INTO order_items (order_id, product_id, product_name, quantity, price)
                 VALUES (%s, %s, %s, %s, %s)
             """, (order_db_id, product_id, item['name'], item['quantity'], item['price']))
 
-        # Commit transaction
+        # Commit transaction explicitly to disk registers
         conn.commit()
 
-        # Clear cart and temporary razorpay order id
-        session.pop('cart', None)
+        # Clear standard storage mapping ONLY for the variations that were just purchased
+        cart = session.get('cart', {})
+        for pid in checkout_items.keys():
+            cart.pop(pid, None)
+
+        session['cart'] = cart
+        session.pop('checkout_items', None)
+        session.pop('checkout_total', None)
+        session.pop('address', None)
         session.pop('razorpay_order_id', None)
 
         flash("Payment successful and order placed!", "success")
@@ -1282,11 +1305,14 @@ def add_to_cart_direct(product_id):
 @app.route('/user/buy-now/<int:product_id>')
 def buy_now_express(product_id):
     if 'user_id' not in session:
-        flash("Please login first!", "danger")
+        flash("Please login to purchase items directly!", "danger")
         return redirect('/user-login')
 
+    user_id = session['user_id']
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
+    
+    # 1️⃣ Fetch product specs instantly out of your master inventory table
     cursor.execute("SELECT * FROM products WHERE product_id=%s", (product_id,))
     product = cursor.fetchone()
     cursor.close()
@@ -1297,19 +1323,44 @@ def buy_now_express(product_id):
         return redirect('/user/products')
 
     pid = str(product_id)
-    checkout_items = {
+    total_amount = float(product['price'])
+
+    # 2️⃣ Build structural express payload tracking maps directly in the Session state cache
+    session["checkout_items"] = {
         pid: {
             'name': product['name'],
-            'price': float(product['price']),
+            'price': total_amount,
             'image': product['image'],
             'quantity': 1
         }
     }
+    session["checkout_total"] = total_amount
 
-    session["checkout_items"] = checkout_items
-    session["checkout_total"] = float(product['price'])
+    try:
+        # 3️⃣ Create Razorpay transaction order parameters on-the-fly
+        razorpay_order = razorpay_client.order.create({
+            "amount": int(total_amount * 100),   # Value parameters mapped in Paise
+            "currency": "INR",
+            "payment_capture": 1
+        })
 
-    return redirect("/user/address")
+        session["razorpay_order_id"] = razorpay_order["id"]
+
+        # 4️⃣ RENDER CHANNELS: Serve payment checkout script layers immediately
+        return render_template(
+            "user/payment.html",
+            address=session.get("address", {}), # Injects blank or fallback parameters safely
+            checkout_items=session["checkout_items"],
+            total=total_amount,
+            key_id=config.RAZORPAY_KEY_ID,
+            order_id=razorpay_order["id"]
+        )
+    except Exception as e:
+        app.logger.error("Express Razorpay Initialization Failure: %s", str(e))
+        flash("Payment gateway connection timed out. Please try again.", "danger")
+        return redirect("/user/products")
+    
+
 
 @app.route('/user/verify-payment', methods=['POST', 'GET'])
 def verify_payment_and_place_order():
