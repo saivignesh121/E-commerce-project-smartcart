@@ -600,9 +600,11 @@ def admin_profile_update():
 # =================================================================
 # ROUTE: USER REGISTRATION
 # =================================================================
+# =================================================================
+# ROUTE: USER REGISTRATION (SENDS VERIFICATION OTP)
+# =================================================================
 @app.route('/user-register', methods=['GET', 'POST'])
 def user_register():
-
     if request.method == 'GET':
         return render_template("user/user_register.html")
 
@@ -610,32 +612,109 @@ def user_register():
     email = request.form['email']
     password = request.form['password']
 
-    # Check if user already exists
+    # 1️⃣ Check if user already exists in SQLite
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-
+    cursor = conn.cursor()
     cursor.execute("SELECT * FROM users WHERE email=%s", (email,))
     existing_user = cursor.fetchone()
+    cursor.close()
+    conn.close()
 
     if existing_user:
         flash("Email already registered! Please login.", "danger")
         return redirect('/user-register')
 
-    # Hash password
-    hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+    # 2️⃣ Save user parameters temporarily in session cache data blocks
+    session['user_signup_name'] = name
+    session['user_signup_email'] = email
+    
+    # Hash password using bcrypt and decode safely to a string field representation
+    hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    session['user_signup_password'] = hashed_password
 
-    # Insert new user
-    cursor.execute(
-        "INSERT INTO users (name, email, password) VALUES (%s, %s, %s)",
-        (name, email, hashed_password)
-    )
-    conn.commit()
+    # 3️⃣ Generate the unique verification security token code
+    otp = random.randint(100000, 999999)
+    session['user_otp'] = otp
 
-    cursor.close()
-    conn.close()
+    try:
+        # 4️⃣ Dispatch confirmation alert mail payload via SMTP configuration blocks
+        message = Message(
+            subject="SmartCart User Verification OTP",
+            sender=config.MAIL_USERNAME,
+            recipients=[email]
+        )
+        message.body = f"Hello {name},\n\nYour OTP for registration on SmartCart is: {otp}\n\nPlease do not share this security token with anyone."
+        mail.send(message)
 
-    flash("Registration successful! Please login.", "success")
-    return redirect('/user-login')
+        flash("Verification OTP sent to your email!", "success")
+        return redirect('/user/verify-otp')
+        
+    except Exception as e:
+        app.logger.error("Failed to execute User Registration Email dispatch: %s", str(e))
+        flash("Error sending OTP. Please check your system email setup configuration.", "danger")
+        return redirect('/user-register')
+
+
+# =================================================================
+# ROUTE: DISPLAY USER OTP INPUT MASK VIA SHARED TEMPLATE
+# =================================================================
+@app.route('/user/verify-otp', methods=['GET'])
+def verify_user_otp_get():
+    if 'user_otp' not in session:
+        flash("Session expired. Please register again.", "danger")
+        return redirect('/user-register')
+        
+    # REUSE: Serves your existing admin page layout while pointing submission action routes to the user processor
+    return render_template("admin/verify_otp.html", target_url="/user/verify-otp")
+
+
+# =================================================================
+# ROUTE: PROCESS USER OTP VERIFICATION & INSERT INTO DATABASE
+# =================================================================
+@app.route('/user/verify-otp', methods=['POST'])
+def verify_user_otp_post():
+    if 'user_otp' not in session:
+        flash("Registration session expired. Please start over.", "danger")
+        return redirect('/user-register')
+
+    submitted_otp = request.form.get('otp')
+
+    # Compare validation handshake codes securely
+    if str(session.get('user_otp')) != str(submitted_otp):
+        flash("Invalid Verification OTP. Please try again!", "danger")
+        return redirect('/user/verify-otp')
+
+    # Fetch cached parameters back out of session state blocks
+    name = session.get('user_signup_name')
+    email = session.get('user_signup_email')
+    hashed_password = session.get('user_signup_password')
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        # Commit record into your standard SQLite database data sets
+        cursor.execute(
+            "INSERT INTO users (name, email, password) VALUES (%s, %s, %s)",
+            (name, email, hashed_password)
+        )
+        conn.commit()
+        
+        # Housekeeping: Purge memory configurations safely out of active state storage
+        session.pop('user_otp', None)
+        session.pop('user_signup_name', None)
+        session.pop('user_signup_email', None)
+        session.pop('user_signup_password', None)
+
+        flash("Account verified successfully! Please log in.", "success")
+        return redirect('/user-login')
+        
+    except Exception as e:
+        app.logger.error("User registration execution failure sequence: %s", str(e))
+        flash("An error occurred while building your profile. Try again.", "danger")
+        return redirect('/user-register')
+    finally:
+        cursor.close()
+        conn.close()
 
 # =================================================================
 # ROUTE: USER LOGIN
