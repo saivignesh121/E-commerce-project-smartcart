@@ -1,18 +1,28 @@
-SECRET_KEY = "your_secret_key"
+import os
 
-# MySQL Database
-DB_HOST = "localhost"
-DB_USER = "root"
-DB_PASSWORD = "MYSQL"
-DB_NAME = "smartcart_db"
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
-# Email SMTP Settings
-MAIL_SERVER = 'smtp.gmail.com'
-MAIL_PORT = 587
-MAIL_USE_TLS = True
-MAIL_USERNAME = 'saivigneshkolu6@gmail.com'
-MAIL_PASSWORD = 'dbrs wuow wpyu jwzf'  
+# Flask
+SECRET_KEY = os.getenv("SECRET_KEY", "dev-only-change-this-secret")
 
-RAZORPAY_KEY_ID = "rzp_test_T8tGtsq9dKb41c"
-RAZORPAY_KEY_SECRET = "7715ToS6D1iFjh9JV8oXsOMh"
+# MySQL / Railway MySQL
+DB_HOST = os.getenv("MYSQLHOST") or os.getenv("DB_HOST", "localhost")
+DB_PORT = int(os.getenv("MYSQLPORT") or os.getenv("DB_PORT", "3306"))
+DB_USER = os.getenv("MYSQLUSER") or os.getenv("DB_USER", "root")
+DB_PASSWORD = os.getenv("MYSQLPASSWORD") or os.getenv("DB_PASSWORD", "")
+DB_NAME = os.getenv("MYSQLDATABASE") or os.getenv("DB_NAME", "smartcart_db")
 
+# Email SMTP
+MAIL_SERVER = os.getenv("MAIL_SERVER", "smtp.gmail.com")
+MAIL_PORT = int(os.getenv("MAIL_PORT", "587"))
+MAIL_USE_TLS = os.getenv("MAIL_USE_TLS", "true").lower() in {"1", "true", "yes", "on"}
+MAIL_USERNAME = os.getenv("MAIL_USERNAME", "")
+MAIL_PASSWORD = os.getenv("MAIL_PASSWORD", "")
+
+# Razorpay
+RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID", "")
+RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET", "")
