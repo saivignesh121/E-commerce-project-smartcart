@@ -22,7 +22,11 @@ UPLOAD_FOLDER = 'static/uploads/product_images'
 ADMIN_UPLOAD_FOLDER = 'static/uploads/admin_images'
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['ADMIN_UPLOAD_FOLDER'] = ADMIN_UPLOAD_FOLDER  
+app.config['ADMIN_UPLOAD_FOLDER'] = ADMIN_UPLOAD_FOLDER
+
+# Ensure upload directories exist, including on a newly mounted Railway volume.
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+os.makedirs(app.config['ADMIN_UPLOAD_FOLDER'], exist_ok=True)
 
 # ---------------- EMAIL CONFIGURATION ----------------
 app.config['MAIL_SERVER'] = config.MAIL_SERVER
@@ -34,10 +38,16 @@ app.config['MAIL_PASSWORD'] = config.MAIL_PASSWORD
 mail = Mail(app)
 
 
+@app.route('/health')
+def health():
+    return {"status": "ok"}, 200
+
+
 # ---------------- DB CONNECTION FUNCTION --------------
 def get_db_connection():
     return mysql.connector.connect(
         host=config.DB_HOST,
+        port=config.DB_PORT,
         user=config.DB_USER,
         password=config.DB_PASSWORD,
         database=config.DB_NAME
@@ -1069,8 +1079,10 @@ def place_order():
 
 # ---------------------- RAZORPAY CLIENT ----------------------
 
-razorpay_client = razorpay.Client(
-    auth=(config.RAZORPAY_KEY_ID, config.RAZORPAY_KEY_SECRET)
+razorpay_client = (
+    razorpay.Client(auth=(config.RAZORPAY_KEY_ID, config.RAZORPAY_KEY_SECRET))
+    if config.RAZORPAY_KEY_ID and config.RAZORPAY_KEY_SECRET
+    else None
 )
 
 
@@ -1506,4 +1518,8 @@ def verify_payment_and_place_order():
 # ------------------------- RUN APPARATUS SERVER ------------------------
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(
+        host="0.0.0.0",
+        port=int(os.getenv("PORT", "5000")),
+        debug=os.getenv("FLASK_DEBUG", "0") == "1"
+    )
